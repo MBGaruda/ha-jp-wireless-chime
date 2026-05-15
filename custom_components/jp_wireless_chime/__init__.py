@@ -87,18 +87,37 @@ async def async_setup_services(hass: HomeAssistant) -> bool:
         try:
             # Generate Base64 code based on protocol
             if protocol == PROTOCOL_OHM_07:
+                channel_bits = None
                 if isinstance(channel, str):
                     if len(channel) == 6 and set(channel) <= {"0", "1"}:
                         channel_bits = channel
+                    elif channel.isdigit() and set(channel) <= {"0", "1"} and len(channel) <= 6:
+                        channel_bits = channel.zfill(6)
                     else:
                         try:
                             channel_int = int(channel)
-                            channel_bits = format(channel_int, "06b")
                         except ValueError:
                             _LOGGER.error("OHM-07 channel must be a 6-bit string or number, got: %s", channel)
                             return
+                        if 0 <= channel_int <= 0b111111:
+                            channel_bits = format(channel_int, "06b")
+                        else:
+                            channel_str = str(channel_int)
+                            if len(channel_str) == 6 and set(channel_str) <= {"0", "1"}:
+                                channel_bits = channel_str
+                            else:
+                                _LOGGER.error("OHM-07 channel must be a 6-bit string or number, got: %s", channel)
+                                return
                 elif isinstance(channel, int):
-                    channel_bits = format(channel, "06b")
+                    if 0 <= channel <= 0b111111:
+                        channel_bits = format(channel, "06b")
+                    else:
+                        channel_str = str(channel)
+                        if len(channel_str) == 6 and set(channel_str) <= {"0", "1"}:
+                            channel_bits = channel_str
+                        else:
+                            _LOGGER.error("OHM-07 channel must be a 6-bit string or number, got: %s", channel)
+                            return
                 else:
                     _LOGGER.error("OHM-07 channel must be a 6-bit string or number, got: %s", channel)
                     return
