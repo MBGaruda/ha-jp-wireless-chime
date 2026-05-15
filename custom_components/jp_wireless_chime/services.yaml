@@ -1,0 +1,38 @@
+send_chime:
+  name: Send chime
+  description: Generate and send a Japanese wireless chime RF signal via a Broadlink remote entity.
+  fields:
+    protocol:
+      name: Protocol
+      description: Chime protocol to use.
+      required: true
+      selector:
+        select:
+          options:
+            - revex_x
+            - ohm_07
+    channel:
+      name: Channel
+      description: Chime channel number or ID.
+      required: true
+      selector:
+        number:
+          min: 1
+          max: 64
+          mode: box
+    melody:
+      name: Melody
+      description: Melody number.
+      required: true
+      selector:
+        number:
+          min: 1
+          max: 64
+          mode: box
+    remote_entity_id:
+      name: Broadlink remote entity
+      description: Home Assistant remote entity used to transmit the generated RF code.
+      required: true
+      selector:
+        entity:
+          domain: remote
