@@ -27,7 +27,7 @@ _LOGGER = logging.getLogger(__name__)
 SEND_CHIME_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_PROTOCOL): vol.In(SUPPORTED_PROTOCOLS),
-        vol.Required(CONF_CHANNEL): cv.positive_int,
+        vol.Required(CONF_CHANNEL): vol.Any(cv.positive_int, cv.string),
         vol.Required(CONF_MELODY): cv.positive_int,
         vol.Required(CONF_REMOTE_ENTITY_ID): cv.entity_id,
     }
