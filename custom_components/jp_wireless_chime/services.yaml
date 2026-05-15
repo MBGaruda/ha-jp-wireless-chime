@@ -13,7 +13,7 @@ send_chime:
             - ohm_07
     channel:
       name: Channel
-      description: Chime channel (OHM-07 requires 1-64 as number, Revex X requires format like "P16" where letter is A-P and number is 1-16. P16 is the factory default).
+      description: Chime channel number.
       required: true
       selector:
         text:
@@ -22,10 +22,7 @@ send_chime:
       description: Melody number.
       required: true
       selector:
-        number:
-          min: 1
-          max: 64
-          mode: box
+        text:
     remote_entity_id:
       name: Broadlink remote entity
       description: Home Assistant remote entity used to transmit the generated RF code.
