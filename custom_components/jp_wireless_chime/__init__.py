@@ -47,15 +47,24 @@ async def async_setup_services(hass: HomeAssistant) -> bool:
         melody_bits = None
         melody_value = None
         if protocol == PROTOCOL_OHM_07:
-            if isinstance(melody_input, int):
-                if 0 <= melody_input <= 7:
-                    melody_bits = format(melody_input, "03b")
-            else:
-                melody_str = str(melody_input).lower()
+            # OHM-07: melody can be 3-bit string "001", integer 0-7, or alias name
+            if isinstance(melody_input, str):
+                melody_str = melody_input.lower()
                 if len(melody_str) == 3 and set(melody_str) <= {"0", "1"}:
                     melody_bits = melody_str
                 else:
                     melody_bits = MELODY_ALIASES.get(PROTOCOL_OHM_07, {}).get(melody_str)
+            elif isinstance(melody_input, int):
+                if 0 <= melody_input <= 7:
+                    melody_bits = format(melody_input, "03b")
+                else:
+                    # Try interpreting as 3-bit string (e.g., 10 -> "010")
+                    melody_str = str(melody_input).zfill(3)
+                    if len(melody_str) == 3 and set(melody_str) <= {"0", "1"}:
+                        melody_bits = melody_str
+            else:
+                melody_str = str(melody_input).lower()
+                melody_bits = MELODY_ALIASES.get(PROTOCOL_OHM_07, {}).get(melody_str)
 
             if melody_bits is None:
                 _LOGGER.error("Invalid OHM-07 melody value: %s", melody_input)
