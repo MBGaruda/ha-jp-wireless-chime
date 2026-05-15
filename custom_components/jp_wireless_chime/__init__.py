@@ -34,8 +34,8 @@ SEND_CHIME_SCHEMA = vol.Schema(
 )
 
 
-async def async_setup(hass: HomeAssistant, config: dict) -> bool:
-    """Set up JP Wireless Chime."""
+async def async_setup_services(hass: HomeAssistant) -> bool:
+    """Register services for JP Wireless Chime."""
 
     async def handle_send_chime(call: ServiceCall) -> None:
         """Handle the send_chime service call."""
@@ -93,4 +93,14 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
     _LOGGER.info("JP Wireless Chime initialized")
     return True
+
+
+async def async_setup(hass: HomeAssistant, config: dict) -> bool:
+    """Set up JP Wireless Chime from YAML configuration."""
+    return await async_setup_services(hass)
+
+
+async def async_setup_entry(hass: HomeAssistant, entry) -> bool:
+    """Set up JP Wireless Chime from a config entry."""
+    return await async_setup_services(hass)
     
