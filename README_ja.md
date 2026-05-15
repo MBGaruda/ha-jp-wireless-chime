@@ -62,8 +62,8 @@ data:
 - **protocol**: `revex_x` または `ohm_07`
 - **channel**: 
   - REVEX X: `G13` のような形式（アルファベット A-P ＋ 数字 1-16）
-  - OHM-07: 数値チャンネル（1-64）
-- **melody**: 音色名または数値
+  - OHM-07: 6 ビットチャンネル文字列、例 `101101`
+- **melody**: 音色名または 3 ビット tone 文字列
   - REVEX X: 下記一覧参照
   - OHM-07: 下記一覧参照
 - **remote_entity_id**: Broadlink リモートエンティティ ID
@@ -89,16 +89,19 @@ data:
 15. `siren1` - サイレン音1（30秒）
 16. `siren2` - サイレン音2（30秒）
 
-#### OHM-07（１－８）
+#### OHM-07
 
-1. `yellowroseoftexas` - テキサスの黄色いバラ
-2. `westminsterchime` - ウエストミンスター（チャイム音）
-3. `myoldkentuckyhome` - ケンタッキーの我が家
-4. `westminsterelectronic` - ウエストミンスター（電子音）
-5. `minuet` - メヌエット
-6. `pingpongchime` - ピンポン（チャイム音）
-7. `pingpongpong` - ピンポンポン
-8. `pingpongdouble` - ピンポン（連絡２回）
+- `channel`: 6 ビット二進数文字列、例 `101101`
+- `melody`: 3 ビット二進数文字列またはエイリアス
+
+1. `000` - テキサスの黄色いバラ
+2. `001` - ウエストミンスター（チャイム音）
+3. `010` - ケンタッキーの我が家
+4. `011` - ウエストミンスター（電子音）
+5. `100` - メヌエット
+6. `101` - ピンポン（チャイム音）
+7. `110` - ピンポンポン
+8. `111` - ピンポン（連続2回）
 
 ### 自動化の例
 
@@ -112,9 +115,9 @@ automation:
     action:
       service: jp_wireless_chime.send_chime
       data:
-        protocol: revex_x
-        channel: G13
-        melody: jinglebell
+        protocol: ohm_07
+        channel: "101101"
+        melody: "001"
         remote_entity_id: remote.rm4_pro
 ```
 

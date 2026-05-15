@@ -40,14 +40,14 @@ MELODY_ALIASES = {
         "siren2": 16,
     },
     PROTOCOL_OHM_07: {
-        # OHM-07 melody names (lowercase)
-        "yellowroseoftexas": 1,
-        "westminsterchime": 2,
-        "myoldkentuckyhome": 3,
-        "westminsterelectronic": 4,
-        "minuet": 5,
-        "pingpongchime": 6,
-        "pingpongpong": 7,
-        "pingpongdouble": 8,
+        # OHM-07 melody bit patterns (lowercase)
+        "yellowroseoftexas": "000",
+        "westminsterchime": "001",
+        "myoldkentuckyhome": "010",
+        "westminsterelectronic": "011",
+        "minuet": "100",
+        "pingpongchime": "101",
+        "pingpongpong": "110",
+        "pingpongdouble": "111",
     },
 }

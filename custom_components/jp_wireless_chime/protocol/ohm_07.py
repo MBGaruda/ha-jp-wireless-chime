@@ -63,18 +63,14 @@ def build_payload(
 
 
 def generate_base64(
-    channel: int,
-    tone: int,
+    channel_bits: str,
+    tone_bits: str,
 ) -> str:
-    if not (1 <= channel <= 64):
-        raise ValueError("channel must be between 1 and 64")
+    if not isinstance(channel_bits, str) or len(channel_bits) != 6 or any(c not in "01" for c in channel_bits):
+        raise ValueError("channel must be a 6-bit binary string")
 
-    if not (1 <= tone <= 8):
-        raise ValueError("tone must be between 1 and 8")
-
-    # Convert channel and tone directly to 6-bit and 3-bit binary DIP patterns
-    channel_bits = format(channel, "06b")
-    tone_bits = format(tone, "03b")
+    if not isinstance(tone_bits, str) or len(tone_bits) != 3 or any(c not in "01" for c in tone_bits):
+        raise ValueError("tone must be a 3-bit binary string")
 
     payload = build_payload(channel_bits, tone_bits)
 

@@ -62,8 +62,8 @@ data:
 - **protocol**: `revex_x` or `ohm_07`
 - **channel**: 
   - REVEX X: Format like `G13` (letter A-P + number 1-16)
-  - OHM-07: Numeric channel (1-64)
-- **melody**: Melody name or number
+  - OHM-07: 6-bit channel string, e.g. `101101`
+- **melody**: Melody name or 3-bit tone string
   - REVEX X: See list below
   - OHM-07: See list below
 - **remote_entity_id**: Broadlink remote entity ID
@@ -89,16 +89,19 @@ data:
 15. `siren1` - Siren 1 (30 sec)
 16. `siren2` - Siren 2 (30 sec)
 
-#### OHM-07 (1-8)
+#### OHM-07
 
-1. `yellowroseoftexas` - Yellow Rose of Texas
-2. `westminsterchime` - Westminster (Chime sound)
-3. `myoldkentuckyhome` - My Old Kentucky Home
-4. `westminsterelectronic` - Westminster (Electronic)
-5. `minuet` - Minuet
-6. `pingpongchime` - Ping-Pong (Chime)
-7. `pingpongpong` - Ping-Pong-Pong
-8. `pingpongdouble` - Ping-Pong (Double)
+- `channel`: 6-bit binary string, e.g. `101101`
+- `melody`: 3-bit binary string or alias
+
+1. `000` - Yellow Rose of Texas
+2. `001` - Westminster Chime
+3. `010` - My Old Kentucky Home
+4. `011` - Westminster Electronic
+5. `100` - Minuet
+6. `101` - Ping-Pong Chime
+7. `110` - Ping-Pong Pong
+8. `111` - Ping-Pong Double
 
 ---
 

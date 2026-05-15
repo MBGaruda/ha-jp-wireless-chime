@@ -43,44 +43,69 @@ async def async_setup_services(hass: HomeAssistant) -> bool:
         protocol = call.data[CONF_PROTOCOL]
         channel = call.data[CONF_CHANNEL]
         melody_input = call.data[CONF_MELODY]
-        # Normalize melody: accept int, numeric string, or alias
-        melody = None
-        if isinstance(melody_input, int):
-            melody = melody_input
-        else:
-            try:
-                melody = int(str(melody_input))
-            except Exception:
-                # lookup alias (case-insensitive)
-                aliases = MELODY_ALIASES.get(protocol, {})
-                melody = aliases.get(str(melody_input).lower())
 
-        if melody is None:
-            _LOGGER.error("Invalid melody value: %s", melody_input)
-            return
+        melody_bits = None
+        melody_value = None
+        if protocol == PROTOCOL_OHM_07:
+            if isinstance(melody_input, int):
+                if 0 <= melody_input <= 7:
+                    melody_bits = format(melody_input, "03b")
+            else:
+                melody_str = str(melody_input).lower()
+                if len(melody_str) == 3 and set(melody_str) <= {"0", "1"}:
+                    melody_bits = melody_str
+                else:
+                    melody_bits = MELODY_ALIASES.get(PROTOCOL_OHM_07, {}).get(melody_str)
+
+            if melody_bits is None:
+                _LOGGER.error("Invalid OHM-07 melody value: %s", melody_input)
+                return
+        else:
+            if isinstance(melody_input, int):
+                melody_value = melody_input
+            else:
+                try:
+                    melody_value = int(str(melody_input))
+                except Exception:
+                    aliases = MELODY_ALIASES.get(protocol, {})
+                    melody_value = aliases.get(str(melody_input).lower())
+
+            if melody_value is None:
+                _LOGGER.error("Invalid melody value: %s", melody_input)
+                return
+
         remote_entity_id = call.data[CONF_REMOTE_ENTITY_ID]
 
         _LOGGER.info(
             "JP Wireless Chime send requested: protocol=%s, channel=%s, melody=%s, remote=%s",
             protocol,
             channel,
-            melody,
+            melody_input,
             remote_entity_id,
         )
 
         try:
             # Generate Base64 code based on protocol
             if protocol == PROTOCOL_OHM_07:
-                # Convert channel string to integer
-                try:
-                    channel_int = int(channel)
-                except ValueError:
-                    _LOGGER.error("OHM-07 channel must be a number (1-64), got: %s", channel)
+                if isinstance(channel, str):
+                    if len(channel) == 6 and set(channel) <= {"0", "1"}:
+                        channel_bits = channel
+                    else:
+                        try:
+                            channel_int = int(channel)
+                            channel_bits = format(channel_int, "06b")
+                        except ValueError:
+                            _LOGGER.error("OHM-07 channel must be a 6-bit string or number, got: %s", channel)
+                            return
+                elif isinstance(channel, int):
+                    channel_bits = format(channel, "06b")
+                else:
+                    _LOGGER.error("OHM-07 channel must be a 6-bit string or number, got: %s", channel)
                     return
-                base64_code = ohm_07.generate_base64(channel_int, melody)
+
+                base64_code = ohm_07.generate_base64(channel_bits, melody_bits)
             elif protocol == PROTOCOL_REVEX_X:
-                # Channel should be in format like "G13"
-                base64_code = revex_x.generate_base64(channel, melody)
+                base64_code = revex_x.generate_base64(channel, melody_value)
             else:
                 _LOGGER.error("Unsupported protocol: %s", protocol)
                 return
