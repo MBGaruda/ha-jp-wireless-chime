@@ -13,13 +13,10 @@ send_chime:
             - ohm_07
     channel:
       name: Channel
-      description: Chime channel number or ID.
+      description: Chime channel (OHM-07 requires 1-64 as number, Revex X requires format like "P16" where letter is A-P and number is 1-16. P16 is the factory default).
       required: true
       selector:
-        number:
-          min: 1
-          max: 64
-          mode: box
+        text:
     melody:
       name: Melody
       description: Melody number.

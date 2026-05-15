@@ -87,10 +87,52 @@ def build_packet(group: str, number: int, melody: int) -> bytes:
 
 
 def generate_base64(
-    group: str,
-    number: int,
+    channel: str,
     melody: int,
 ) -> str:
-    packet = build_packet(group, number, melody)
+    """Generate Base64 code from channel and melody.
+    
+    Args:
+        channel: Channel in format like "G13" (letter A-P + number 1-16)
+        melody: Melody number (1-16)
+    
+    Returns:
+        Base64 encoded packet
+    
+    Raises:
+        ValueError: If channel format is invalid or values are out of range
+    """
+    if not isinstance(channel, str) or len(channel) < 2:
+        raise ValueError("channel must be in format like 'G13' (letter + number)")
+    
+    group = channel[0].upper()
+    try:
+        number = int(channel[1:])
+    except ValueError:
+        raise ValueError("channel must be in format like 'G13' (letter + number)")
+    
+    if melody not in MELODY_CODE:
+        raise ValueError("melody must be 1-16")
+
+    if group not in GROUP_TO_INDEX:
+        raise ValueError("group must be A-P")
+
+    if number not in ID_CODE:
+        raise ValueError("number must be 1-16")
+
+    revex_hex = (
+        ID_CODE[GROUP_TO_INDEX[group]]
+        + ID_CODE[number]
+        + MELODY_CODE[melody]
+    )
+
+    bits = hex_to_bits(revex_hex)
+
+    body = b"".join(
+        BIT_1 if bit == "1" else BIT_0
+        for bit in bits
+    )
+
+    packet = HEADER + body + FOOTER
 
     return base64.b64encode(packet).decode()

@@ -15,9 +15,12 @@ from .const import (
     CONF_PROTOCOL,
     CONF_REMOTE_ENTITY_ID,
     DOMAIN,
+    PROTOCOL_OHM_07,
+    PROTOCOL_REVEX_X,
     SERVICE_SEND_CHIME,
     SUPPORTED_PROTOCOLS,
 )
+from .protocol import ohm_07, revex_x
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -49,9 +52,37 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             remote_entity_id,
         )
 
-        # TODO:
-        # 1. Generate Broadlink Base64 code from protocol/channel/melody.
-        # 2. Call remote.send_command with command="b64:<generated_code>".
+        try:
+            # Generate Base64 code based on protocol
+            if protocol == PROTOCOL_OHM_07:
+                # Convert channel string to integer
+                try:
+                    channel_int = int(channel)
+                except ValueError:
+                    _LOGGER.error("OHM-07 channel must be a number (1-64), got: %s", channel)
+                    return
+                base64_code = ohm_07.generate_base64(channel_int, melody)
+            elif protocol == PROTOCOL_REVEX_X:
+                # Channel should be in format like "G13"
+                base64_code = revex_x.generate_base64(channel, melody)
+            else:
+                _LOGGER.error("Unsupported protocol: %s", protocol)
+                return
+
+            # Send the command via Broadlink remote
+            await hass.services.async_call(
+                "remote",
+                "send_command",
+                {
+                    "entity_id": remote_entity_id,
+                    "command": f"b64:{base64_code}",
+                },
+            )
+
+            _LOGGER.info("JP Wireless Chime command sent successfully")
+
+        except Exception as err:
+            _LOGGER.error("Error sending JP Wireless Chime command: %s", err)
 
     hass.services.async_register(
         DOMAIN,

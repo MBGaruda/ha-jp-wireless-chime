@@ -21,33 +21,33 @@ def encode_dip_bit(bit: str) -> str:
 
 
 def build_frame(
-    channel: str,
-    tone: str,
+    channel_bits: str,
+    tone_bits: str,
 ) -> str:
-    if len(channel) != 6:
+    if len(channel_bits) != 6:
         raise ValueError("channel must be 6 bits")
 
-    if len(tone) != 3:
+    if len(tone_bits) != 3:
         raise ValueError("tone must be 3 bits")
 
     ch_bits = "".join(
         encode_dip_bit(b)
-        for b in channel
+        for b in channel_bits
     )
 
-    tone_bits = "".join(
+    tone_bits_encoded = "".join(
         encode_dip_bit(b)
-        for b in tone
+        for b in tone_bits
     )
 
-    return ch_bits + "1111" + tone_bits + "00"
+    return ch_bits + "1111" + tone_bits_encoded + "00"
 
 
 def build_payload(
-    channel: str,
-    tone: str,
+    channel_bits: str,
+    tone_bits: str,
 ) -> bytes:
-    frame = build_frame(channel, tone)
+    frame = build_frame(channel_bits, tone_bits)
 
     packet = bytearray()
 
@@ -63,9 +63,20 @@ def build_payload(
 
 
 def generate_base64(
-    channel: str,
-    tone: str,
+    channel: int,
+    tone: int,
 ) -> str:
-    payload = build_payload(channel, tone)
+    if not (1 <= channel <= 64):
+        raise ValueError("channel must be between 1 and 64")
+
+    if not (1 <= tone <= 8):
+        raise ValueError("tone must be between 1 and 8")
+
+    # Convert 1-based decimal to 0-based and then to 6-bit binary
+    channel_bits = format(channel - 1, "06b")
+    # Convert 1-based decimal to 0-based and then to 3-bit binary
+    tone_bits = format(tone - 1, "03b")
+
+    payload = build_payload(channel_bits, tone_bits)
 
     return base64.b64encode(payload).decode()
