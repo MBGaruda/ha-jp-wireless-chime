@@ -72,10 +72,9 @@ def generate_base64(
     if not (1 <= tone <= 8):
         raise ValueError("tone must be between 1 and 8")
 
-    # Convert 1-based decimal to 0-based and then to 6-bit binary
-    channel_bits = format(channel - 1, "06b")
-    # Convert 1-based decimal to 0-based and then to 3-bit binary
-    tone_bits = format(tone - 1, "03b")
+    # Convert channel and tone directly to 6-bit and 3-bit binary DIP patterns
+    channel_bits = format(channel, "06b")
+    tone_bits = format(tone, "03b")
 
     payload = build_payload(channel_bits, tone_bits)
 

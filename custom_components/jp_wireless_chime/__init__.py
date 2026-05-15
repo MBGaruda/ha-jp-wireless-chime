@@ -19,6 +19,7 @@ from .const import (
     PROTOCOL_REVEX_X,
     SERVICE_SEND_CHIME,
     SUPPORTED_PROTOCOLS,
+    MELODY_ALIASES,
 )
 from .protocol import ohm_07, revex_x
 
@@ -28,7 +29,7 @@ SEND_CHIME_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_PROTOCOL): vol.In(SUPPORTED_PROTOCOLS),
         vol.Required(CONF_CHANNEL): vol.Any(cv.positive_int, cv.string),
-        vol.Required(CONF_MELODY): cv.positive_int,
+        vol.Required(CONF_MELODY): vol.Any(cv.positive_int, cv.string),
         vol.Required(CONF_REMOTE_ENTITY_ID): cv.entity_id,
     }
 )
@@ -41,7 +42,22 @@ async def async_setup_services(hass: HomeAssistant) -> bool:
         """Handle the send_chime service call."""
         protocol = call.data[CONF_PROTOCOL]
         channel = call.data[CONF_CHANNEL]
-        melody = call.data[CONF_MELODY]
+        melody_input = call.data[CONF_MELODY]
+        # Normalize melody: accept int, numeric string, or alias
+        melody = None
+        if isinstance(melody_input, int):
+            melody = melody_input
+        else:
+            try:
+                melody = int(str(melody_input))
+            except Exception:
+                # lookup alias (case-insensitive)
+                aliases = MELODY_ALIASES.get(protocol, {})
+                melody = aliases.get(str(melody_input).lower())
+
+        if melody is None:
+            _LOGGER.error("Invalid melody value: %s", melody_input)
+            return
         remote_entity_id = call.data[CONF_REMOTE_ENTITY_ID]
 
         _LOGGER.info(

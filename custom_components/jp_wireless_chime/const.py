@@ -16,3 +16,38 @@ SUPPORTED_PROTOCOLS = [
     PROTOCOL_REVEX_X,
     PROTOCOL_OHM_07,
 ]
+
+# Melody aliases: user-friendly names to numeric indexes per protocol.
+# Keys are lowercase; values are 1-based integers as accepted by protocol generators.
+MELODY_ALIASES = {
+    PROTOCOL_REVEX_X: {
+        # REVEX_X melody names (lowercase)
+        "chimepingpong": 1,
+        "westminsterchime": 2,
+        "furelise": 3,
+        "childhoodremembered": 4,
+        "greensleeves": 5,
+        "ohsusanna": 6,
+        "busker": 7,
+        "musicbox": 8,
+        "homesweethome": 9,
+        "jinglebell": 10,
+        "happybirthday": 11,
+        "bird": 12,
+        "dog": 13,
+        "buzzer": 14,
+        "siren1": 15,
+        "siren2": 16,
+    },
+    PROTOCOL_OHM_07: {
+        # OHM-07 melody names (lowercase)
+        "yellowroseoftexas": 1,
+        "westminsterchime": 2,
+        "myoldkentuckyhome": 3,
+        "westminsterelectronic": 4,
+        "minuet": 5,
+        "pingpongchime": 6,
+        "pingpongpong": 7,
+        "pingpongdouble": 8,
+    },
+}
