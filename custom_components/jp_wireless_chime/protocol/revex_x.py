@@ -45,20 +45,10 @@ MELODY_CODE = {
     16: "15",
 }
 
-# Waveform-based constants (RM4 Pro compatible format)
-HEADER_HEX = "78068403"
-SUFFIX_HEX = "05dc00000000"
-
-FRAME_SYNCS = [0x95, 0x95, 0x95, 0x94, 0x96, 0x96, 0x95, 0x95, 0x95, 0x96, 0x94, 0x95]
-FRAME_GAPS = [0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0B, 0x0B, 0x0A, 0x0A, 0x0A, 0x0A, None]
-
-BIT_1 = (0x1E, 0x09)  # long, short
-BIT_0 = (0x0A, 0x1D)  # short, long
-
-BITS_PER_FRAME = 34
-PULSES_PER_FRAME = 68
-LEADING_LEN = 59
-EXPECTED_PACKET_BYTES = 908
+HEADER = bytes.fromhex("78863200")
+BIT_1 = bytes.fromhex("1f08")
+BIT_0 = bytes.fromhex("0c19")
+FOOTER = bytes.fromhex("0c95000000000000")
 
 
 def hex_to_bits(hexstr: str) -> str:
@@ -66,26 +56,6 @@ def hex_to_bits(hexstr: str) -> str:
         f"{int(hexstr[i:i+2], 16):08b}"
         for i in range(0, len(hexstr), 2)
     )
-
-
-def encode_bits(target_bits: str) -> bytes:
-    if len(target_bits) != BITS_PER_FRAME:
-        raise ValueError(f"target bits length is invalid: {len(target_bits)}")
-
-    out = bytearray()
-
-    for bit in target_bits:
-        if bit == "1":
-            out.extend(BIT_1)
-        elif bit == "0":
-            out.extend(BIT_0)
-        else:
-            raise ValueError("target bits must contain only 0 or 1")
-
-    if len(out) != PULSES_PER_FRAME:
-        raise ValueError(f"encoded frame length is invalid: {len(out)}")
-
-    return bytes(out)
 
 
 def build_packet(group: str, number: int, melody: int) -> bytes:
@@ -106,39 +76,21 @@ def build_packet(group: str, number: int, melody: int) -> bytes:
         + MELODY_CODE[melody]
     )
 
-    # revex_x generates 26 bits (24 + "00"), pad to 34 bits
-    target_bits = hex_to_bits(revex_hex) + "00" + "00000000"
+    bits = hex_to_bits(revex_hex)
 
-    frame = encode_bits(target_bits)
-    leading = frame[-LEADING_LEN:]
+    body = b"".join(
+        BIT_1 if bit == "1" else BIT_0
+        for bit in bits
+    )
 
-    out = bytearray()
-    out.extend(bytes.fromhex(HEADER_HEX))
-    out.extend(leading)
-
-    for sync, gap in zip(FRAME_SYNCS, FRAME_GAPS):
-        out.append(sync)
-        out.extend(frame)
-        if gap is not None:
-            out.append(gap)
-
-    out.extend(bytes.fromhex(SUFFIX_HEX))
-
-    packet = bytes(out)
-
-    if len(packet) != EXPECTED_PACKET_BYTES:
-        raise ValueError(
-            f"packet length mismatch: {len(packet)} != {EXPECTED_PACKET_BYTES}"
-        )
-
-    return packet
+    return HEADER + body + FOOTER
 
 
 def generate_base64(
     channel: str,
     melody: int,
 ) -> str:
-    """Generate Base64 code from channel and melody (RM4 Pro compatible waveform format).
+    """Generate Base64 code from channel and melody.
     
     Args:
         channel: Channel in format like "G13" (letter A-P + number 1-16)
@@ -168,6 +120,19 @@ def generate_base64(
     if number not in ID_CODE:
         raise ValueError("number must be 1-16")
 
-    packet = build_packet(group, number, melody)
+    revex_hex = (
+        ID_CODE[GROUP_TO_INDEX[group]]
+        + ID_CODE[number]
+        + MELODY_CODE[melody]
+    )
+
+    bits = hex_to_bits(revex_hex)
+
+    body = b"".join(
+        BIT_1 if bit == "1" else BIT_0
+        for bit in bits
+    )
+
+    packet = HEADER + body + FOOTER
 
     return base64.b64encode(packet).decode()
