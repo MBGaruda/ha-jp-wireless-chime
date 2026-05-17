@@ -10,6 +10,7 @@ send_chime:
         select:
           options:
             - revex_x
+            - revex_xp
             - ohm_07
     channel:
       name: Channel
