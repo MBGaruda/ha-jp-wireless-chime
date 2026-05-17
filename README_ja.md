@@ -11,9 +11,8 @@ Home Assistant 用のカスタム統合。Broadlink RF デバイスを使用し�
 現在対応しているプロトコル：
 
 - REVEX X シリーズ
+- REVEX XP シリーズ
 - OHM 07 シリーズ
-
-将来的に追加の日本無線チャイムプロトコルに対応予定です。
 
 ---
 
@@ -40,7 +39,7 @@ Home Assistant 用のカスタム統合。Broadlink RF デバイスを使用し�
 
 ### HACS
 
-HACS 対応を計画中です。
+HACS でこのリポジトリを登録し、ダウンロードしてください。
 
 ---
 
@@ -51,7 +50,7 @@ HACS 対応を計画中です。
 ```yaml
 action: jp_wireless_chime.send_chime
 data:
-  protocol: revex_x
+  protocol: revex_xp
   channel: G13
   melody: jinglebell
   remote_entity_id: remote.rm4_pro
@@ -64,8 +63,9 @@ data:
   - REVEX X: `G13` のような形式（アルファベット A-P ＋ 数字 1-16）
   - OHM-07: 6 ビットチャンネル文字列、例 `101101`
 - **melody**: 音色名または 3 ビット tone 文字列
-  - REVEX X: 下記一覧参照
-  - OHM-07: 下記一覧参照
+  - REVEX X: 数字 1-16またはエイリアス
+  - REVEX XP: 数字 1-64 またはエイリアス（1-16 のエイリアスが利用可能）
+  - OHM-07: 3 ビット二進数文字列またはエイリアス
 - **remote_entity_id**: Broadlink リモートエンティティ ID
 
 ### 音色一覧
@@ -90,9 +90,6 @@ data:
 16. `siren2` - サイレン音2（30秒）
 
 #### OHM-07
-
-- `channel`: 6 ビット二進数文字列、例 `101101`
-- `melody`: 3 ビット二進数文字列またはエイリアス
 
 1. `000` - テキサスの黄色いバラ
 2. `001` - ウエストミンスター（チャイム音）
@@ -129,10 +126,9 @@ automation:
 
 最初のマイルストーンはサービスベースの送信です。
 
-UI エンティティ（セレクタ、ボタンなど）は後で追加予定です。
-
 ---
 
 ## 免責事項
 
-このプロジェクトは REVEX、OHM、Broadlink、Home Assistant と提携していません。
+このプロジェクトは REVEX、OHM、Broadlink、Home Assistant とは何ら関係はありません。
+

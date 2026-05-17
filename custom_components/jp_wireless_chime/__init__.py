@@ -17,11 +17,12 @@ from .const import (
     DOMAIN,
     PROTOCOL_OHM_07,
     PROTOCOL_REVEX_X,
+    PROTOCOL_REVEX_XP,
     SERVICE_SEND_CHIME,
     SUPPORTED_PROTOCOLS,
     MELODY_ALIASES,
 )
-from .protocol import ohm_07, revex_x
+from .protocol import ohm_07, revex_x, revex_xp
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -135,6 +136,8 @@ async def async_setup_services(hass: HomeAssistant) -> bool:
                 base64_code = ohm_07.generate_base64(channel_bits, melody_bits)
             elif protocol == PROTOCOL_REVEX_X:
                 base64_code = revex_x.generate_base64(channel, melody_value)
+            elif protocol == PROTOCOL_REVEX_XP:
+                base64_code = revex_xp.generate_base64(channel, melody_value)
             else:
                 _LOGGER.error("Unsupported protocol: %s", protocol)
                 return
