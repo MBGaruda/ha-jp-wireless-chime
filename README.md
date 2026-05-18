@@ -64,7 +64,7 @@ data:
   - OHM-07: 6-bit channel string, e.g., `101101`
 - **melody**: Melody name or 3-bit tone string
   - REVEX X: Number 1-16 or alias
-  - REVEX XP: Number 1-64 or alias (aliases 1-16 available)
+  - REVEX XP: Number 1-64 or alias (full alias list available)
   - OHM-07: 3-bit binary string or alias
 - **remote_entity_id**: Broadlink remote entity ID
 
@@ -72,22 +72,89 @@ data:
 
 #### REVEX X (1-16)
 
-1. `chimepingpong` - Ping Pong Ping Pong (Chime)
-2. `westminsterchime` - Westminster Chime
-3. `furelise` - Für Elise
-4. `childhoodremembered` - Childhood Remembered
-5. `greensleeves` - Greensleeves (English folk tune)
-6. `ohsusanna` - Oh Susanna
+1. `chime_pingpong` - Ping Pong Ping Pong (Chime)
+2. `westminster_chime` - Westminster Chime
+3. `fur_elise` - Für Elise
+4. `childhood_remembered` - Childhood Remembered
+5. `green_sleeves` - Greensleeves (English folk tune)
+6. `oh_susanna` - Oh Susanna
 7. `busker` - Busker
-8. `musicbox` - Love's Music Box
-9. `homesweethome` - Home Sweet Home
-10. `jinglebell` - Jingle Bell
-11. `happybirthday` - Happy Birthday
+8. `music_box` - Love's Music Box
+9. `home_sweet_home` - Home Sweet Home
+10. `jingle_bell` - Jingle Bell
+11. `happy_birthday` - Happy Birthday
 12. `bird` - Bird Song
 13. `dog` - Dog Barking
 14. `buzzer` - Buzzer
-15. `siren1` - Siren 1 (30 seconds)
-16. `siren2` - Siren 2 (30 seconds)
+15. `siren_1` - Siren 1 (30 seconds)
+16. `siren_2` - Siren 2 (30 seconds)
+
+#### REVEX XP (1-64)
+
+1. `dingdong_a` - DingDongA
+2. `dingdong_g` - DingDongG
+3. `school_bell` - SchoolBell
+4. `emergency_alert` - EmergencyAlert
+5. `train_door_close_a` - TrainDoorCloseA
+6. `fur_elise` - FurElise
+7. `jupiter` - Jupiter
+8. `sakura` - Sakura
+9. `calling_female` - CallingFemale
+10. `visitor_female` - VisitorFemale
+11. `welcome` - Welcome
+12. `sensor_triggered` - SensorTriggered
+13. `intruder_alert` - IntruderAlert
+14. `dog_bark` - DogBark
+15. `alarm_a` - AlarmA
+16. `siren_c` - SirenC
+17. `dingdong_b` - DingDongB
+18. `dingdong_c` - DingDongC
+19. `dingdong_d` - DingDongD
+20. `dingdong_e` - DingDongE
+21. `dingdong_f` - DingDongF
+22. `chime_announcement_a` - ChimeAnnouncementA
+23. `koto_melody` - KotoMelody
+24. `bell_chime` - BellChime
+25. `chime_announcement_b` - ChimeAnnouncementB
+26. `train_door_close_b` - TrainDoorCloseB
+27. `chord_a` - ChordA
+28. `chord_b` - ChordB
+29. `chinese_melody` - ChineseMelody
+30. `waltz_of_flowers` - WaltzOfFlowers
+31. `blue_danube` - BlueDanube
+32. `dance_of_sugar_plum_fairy` - DanceOfSugarPlumFairy
+33. `nutcracker_bird` - NutcrackerBird
+34. `coppelia_waltz` - CoppeliaWaltz
+35. `gamelan` - Gamelan
+36. `puppy_waltz` - PuppyWaltz
+37. `shenandoah_tune` - ShenandoahTune
+38. `liebestraum_no_3` - LiebestraumNo3
+39. `kitri` - Kitri
+40. `twinkle_twinkle` - TwinkleTwinkle
+41. `furusato` - Furusato
+42. `silent_night` - SilentNight
+43. `joy_to_the_world` - JoyToTheWorld
+44. `happy_birthday` - HappyBirthday
+45. `calling_male` - CallingMale
+46. `please_come_here` - PleaseComeHere
+47. `please_come_quickly` - PleaseComeQuickly
+48. `visitor_male` - VisitorMale
+49. `entrance_call` - EntranceCall
+50. `bath_call` - BathCall
+51. `toilet_call` - ToiletCall
+52. `living_room_call` - LivingRoomCall
+53. `door_opened` - DoorOpened
+54. `puppy` - Puppy
+55. `cat_meow` - CatMeow
+56. `kitten` - Kitten
+57. `bird_chirping` - BirdChirping
+58. `seagull` - Seagull
+59. `cricket` - Cricket
+60. `bella_ciao` - BellaCiao
+61. `alarm_b` - AlarmB
+62. `alarm_c` - AlarmC
+63. `siren_a` - SirenA
+64. `siren_b` - SirenB
 
 #### OHM-07
 
