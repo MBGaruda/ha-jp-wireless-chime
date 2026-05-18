@@ -75,10 +75,10 @@ FRAME_GAPS = [
 BIT_1 = (0x1E, 0x09)
 BIT_0 = (0x0A, 0x1D)
 
-BITS_PER_FRAME = 34
-PULSES_PER_FRAME = 68
-LEADING_LEN = 59
-EXPECTED_PACKET_BYTES = 908
+BITS_PER_FRAME = 24
+PULSES_PER_FRAME = 48
+LEADING_LEN = 39
+EXPECTED_PACKET_BYTES = 648
 
 
 def hex_to_bits(hexstr: str) -> str:
@@ -128,7 +128,7 @@ def encode_bits(target_bits: str) -> bytes:
 def build_packet(group: str, number: int, melody: int) -> bytes:
     revex_hex = build_revex_hex(group, number, melody)
 
-    target_bits = hex_to_bits(revex_hex) + "00" + "00000000"
+    target_bits = hex_to_bits(revex_hex)
 
     frame = encode_bits(target_bits)
     leading = frame[-LEADING_LEN:]
