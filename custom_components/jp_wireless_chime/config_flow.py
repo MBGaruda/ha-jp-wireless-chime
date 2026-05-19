@@ -11,6 +11,7 @@ import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.core import callback
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.selector import selector
 from homeassistant.util import slugify
 
@@ -205,6 +206,26 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
 
         if user_input is not None:
             remove_button_id = str(user_input[CONF_BUTTON_ID])
+
+            # Entity Registry cleanup
+            entity_registry = er.async_get(self.hass)
+
+            unique_id = (
+                f"{self.config_entry.entry_id}_{remove_button_id}"
+            )
+
+            entity_id = entity_registry.async_get_entity_id(
+                "event",
+                DOMAIN,
+                unique_id,
+            )
+
+            if entity_id:
+                _LOGGER.info(
+                    "Removing JP Wireless Chime entity: %s",
+                    entity_id,
+                )
+                entity_registry.async_remove(entity_id)
 
             self._buttons = [
                 button
