@@ -45,19 +45,11 @@ def _normalize_ohm_07_channel(channel: int | str) -> str | None:
         if 0 <= channel_int <= 0b111111:
             return format(channel_int, "06b")
 
-        channel_str = str(channel_int)
-        if len(channel_str) == 6 and set(channel_str) <= {"0", "1"}:
-            return channel_str
-
         return None
 
     if isinstance(channel, int):
         if 0 <= channel <= 0b111111:
             return format(channel, "06b")
-
-        channel_str = str(channel)
-        if len(channel_str) == 6 and set(channel_str) <= {"0", "1"}:
-            return channel_str
 
         return None
 
@@ -86,10 +78,6 @@ def _normalize_ohm_07_melody(melody: int | str) -> str | None:
     if isinstance(melody, int):
         if 0 <= melody <= 7:
             return format(melody, "03b")
-
-        melody_str = str(melody).zfill(3)
-        if len(melody_str) == 3 and set(melody_str) <= {"0", "1"}:
-            return melody_str
 
         return None
 
@@ -183,6 +171,55 @@ def generate_base64(protocol: str, channel: int | str, melody: int | str) -> str
         raise ValueError(f"Unsupported protocol: {protocol}")
 
     return protocol_definition.generate_base64(channel, melody)
+
+
+def normalize_command(
+    protocol: str,
+    channel: int | str,
+    melody: int | str,
+) -> dict[str, Any]:
+    """Normalize a send command to the same shape as received decoded data."""
+    if protocol == PROTOCOL_OHM_07:
+        channel_bits = _normalize_ohm_07_channel(channel)
+        melody_bits = _normalize_ohm_07_melody(melody)
+
+        if channel_bits is None:
+            raise ValueError(f"Invalid OHM-07 channel value: {channel}")
+
+        if melody_bits is None:
+            raise ValueError(f"Invalid OHM-07 melody value: {melody}")
+
+        return {
+            "protocol": PROTOCOL_OHM_07,
+            "channel": channel_bits,
+            "melody": melody_bits,
+        }
+
+    if protocol == PROTOCOL_REVEX_X:
+        melody_value = _normalize_numeric_melody(protocol, melody)
+
+        if melody_value is None:
+            raise ValueError(f"Invalid REVEX X melody value: {melody}")
+
+        return {
+            "protocol": PROTOCOL_REVEX_X,
+            "channel": str(channel),
+            "melody": melody_value,
+        }
+
+    if protocol == PROTOCOL_REVEX_XP:
+        melody_value = _normalize_numeric_melody(protocol, melody)
+
+        if melody_value is None:
+            raise ValueError(f"Invalid REVEX XP melody value: {melody}")
+
+        return {
+            "protocol": PROTOCOL_REVEX_XP,
+            "channel": str(channel),
+            "melody": melody_value,
+        }
+
+    raise ValueError(f"Unsupported protocol: {protocol}")
 
 
 def decode_received(

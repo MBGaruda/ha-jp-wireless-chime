@@ -30,7 +30,8 @@
           "protocol": "プロトコル",
           "channel": "チャンネル",
           "melody": "音色",
-          "receiver": "受信機"
+          "receiver": "受信機",
+          "cooldown": "クールタイム"
         }
       },
       "remove": {

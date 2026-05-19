@@ -20,10 +20,12 @@ from .const import (
     CONF_BUTTON_ID,
     CONF_BUTTONS,
     CONF_CHANNEL,
+    CONF_COOLDOWN,
     CONF_MELODY,
     CONF_NAME,
     CONF_PROTOCOL,
     CONF_RECEIVER,
+    DEFAULT_COOLDOWN_SECONDS,
     DOMAIN,
     MATCH_ANY,
     SUPPORTED_PROTOCOLS,
@@ -143,6 +145,7 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
             channel = _normalize_wildcard_value(user_input.get(CONF_CHANNEL))
             melody = _normalize_wildcard_value(user_input.get(CONF_MELODY))
             receiver = _normalize_wildcard_value(user_input.get(CONF_RECEIVER))
+            cooldown = _normalize_cooldown(user_input.get(CONF_COOLDOWN))
 
             if channel != MATCH_ANY and melody != MATCH_ANY:
                 try:
@@ -166,6 +169,7 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
                         CONF_CHANNEL: channel,
                         CONF_MELODY: melody,
                         CONF_RECEIVER: receiver,
+                        CONF_COOLDOWN: cooldown,
                     }
                 )
 
@@ -190,6 +194,20 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
                 vol.Optional(CONF_CHANNEL, default=MATCH_ANY): str,
                 vol.Optional(CONF_MELODY, default=MATCH_ANY): str,
                 vol.Optional(CONF_RECEIVER, default=MATCH_ANY): str,
+                vol.Optional(
+                    CONF_COOLDOWN,
+                    default=DEFAULT_COOLDOWN_SECONDS,
+                ): selector(
+                    {
+                        "number": {
+                            "min": 0,
+                            "max": 3600,
+                            "step": 1,
+                            "mode": "box",
+                            "unit_of_measurement": "s",
+                        }
+                    }
+                ),
             }
         )
 
@@ -323,3 +341,19 @@ def _normalize_wildcard_value(value: Any) -> str:
         return MATCH_ANY
 
     return value_str
+
+
+def _normalize_cooldown(value: Any) -> int:
+    """Normalize cooldown value."""
+    if value is None:
+        return DEFAULT_COOLDOWN_SECONDS
+
+    try:
+        cooldown = int(value)
+    except (TypeError, ValueError):
+        return DEFAULT_COOLDOWN_SECONDS
+
+    if cooldown < 0:
+        return DEFAULT_COOLDOWN_SECONDS
+
+    return cooldown

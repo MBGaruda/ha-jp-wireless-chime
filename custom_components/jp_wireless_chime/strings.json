@@ -30,7 +30,8 @@
           "protocol": "Protocol",
           "channel": "Channel",
           "melody": "Melody",
-          "receiver": "Receiver"
+          "receiver": "Receiver",
+          "cooldown": "Cooldown"
         }
       },
       "remove": {

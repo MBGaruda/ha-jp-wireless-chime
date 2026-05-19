@@ -12,8 +12,12 @@ CONF_NAME = "name"
 CONF_BUTTONS = "buttons"
 CONF_BUTTON_ID = "id"
 CONF_RECEIVER = "receiver"
+CONF_COOLDOWN = "cooldown"
 
 MATCH_ANY = "*"
+
+DEFAULT_COOLDOWN_SECONDS = 2
+SELF_SEND_IGNORE_SECONDS = 5
 
 PROTOCOL_REVEX_X = "revex_x"
 PROTOCOL_OHM_07 = "ohm_07"
@@ -34,6 +38,7 @@ DATA_RECEIVER_SETUP_DONE = "receiver_setup_done"
 DATA_RECEIVER_UNSUB = "receiver_unsub"
 DATA_SERVICES_SETUP_DONE = "services_setup_done"
 DATA_EVENT_ENTITIES = "event_entities"
+DATA_SELF_SEND_IGNORE = "self_send_ignore"
 
 MELODY_ALIASES = {
     PROTOCOL_REVEX_X: {

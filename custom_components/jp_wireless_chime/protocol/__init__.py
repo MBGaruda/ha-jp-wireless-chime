@@ -8,6 +8,7 @@ from .registry import (
     decode_received,
     generate_base64,
     get_protocol,
+    normalize_command,
 )
 
 __all__ = [
@@ -16,4 +17,5 @@ __all__ = [
     "decode_received",
     "generate_base64",
     "get_protocol",
+    "normalize_command",
 ]

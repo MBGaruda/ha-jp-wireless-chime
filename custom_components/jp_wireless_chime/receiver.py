@@ -14,6 +14,7 @@ from .const import (
     EVENT_ESPHOME_RAW_RECEIVED,
 )
 from .protocol import decode_received
+from .self_send import should_ignore_self_send
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -57,6 +58,9 @@ def async_setup_receiver(hass: HomeAssistant) -> Callable[[], None]:
             **decoded,
             "receiver": str(receiver) if receiver is not None else None,
         }
+
+        if should_ignore_self_send(hass, event_data):
+            return
 
         hass.bus.async_fire(EVENT_CHIME_RECEIVED, event_data)
 

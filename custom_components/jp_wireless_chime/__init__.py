@@ -23,8 +23,9 @@ from .const import (
     SERVICE_SEND_CHIME,
     SUPPORTED_PROTOCOLS,
 )
-from .protocol import generate_base64
+from .protocol import generate_base64, normalize_command
 from .receiver import async_setup_receiver
+from .self_send import register_self_send_ignore
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -67,6 +68,14 @@ async def async_setup_services(hass: HomeAssistant) -> bool:
                     channel=channel,
                     melody=melody,
                 )
+
+                normalized_command = normalize_command(
+                    protocol=str(protocol),
+                    channel=channel,
+                    melody=melody,
+                )
+
+                register_self_send_ignore(hass, normalized_command)
 
                 _LOGGER.debug("JP Wireless Chime base64 payload: %s", base64_code)
 

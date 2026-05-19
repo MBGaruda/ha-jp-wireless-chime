@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from time import monotonic
 from typing import Any
 
 from homeassistant.components.event import EventEntity
@@ -13,11 +14,13 @@ from .const import (
     CONF_BUTTON_ID,
     CONF_BUTTONS,
     CONF_CHANNEL,
+    CONF_COOLDOWN,
     CONF_MELODY,
     CONF_NAME,
     CONF_PROTOCOL,
     CONF_RECEIVER,
     DATA_EVENT_ENTITIES,
+    DEFAULT_COOLDOWN_SECONDS,
     DOMAIN,
     EVENT_TYPE_PRESSED,
     MATCH_ANY,
@@ -61,6 +64,9 @@ class JPWirelessChimeButtonEventEntity(EventEntity):
         self._channel = _normalize_match_value(button.get(CONF_CHANNEL))
         self._melody = _normalize_match_value(button.get(CONF_MELODY))
         self._receiver = _normalize_match_value(button.get(CONF_RECEIVER))
+        self._cooldown = _normalize_cooldown(button.get(CONF_COOLDOWN))
+
+        self._last_triggered_at: float | None = None
 
         self._attr_unique_id = f"{entry.entry_id}_{self._button_id}"
         self._attr_name = self._name
@@ -90,6 +96,7 @@ class JPWirelessChimeButtonEventEntity(EventEntity):
             "channel": self._channel,
             "melody": self._melody,
             "receiver": self._receiver,
+            "cooldown": self._cooldown,
         }
 
     def matches(self, event_data: dict[str, Any]) -> bool:
@@ -103,6 +110,11 @@ class JPWirelessChimeButtonEventEntity(EventEntity):
 
     def trigger_pressed(self, event_data: dict[str, Any]) -> None:
         """Trigger pressed event."""
+        if self._is_in_cooldown():
+            return
+
+        self._last_triggered_at = monotonic()
+
         self._trigger_event(
             EVENT_TYPE_PRESSED,
             {
@@ -113,6 +125,16 @@ class JPWirelessChimeButtonEventEntity(EventEntity):
             },
         )
         self.async_write_ha_state()
+
+    def _is_in_cooldown(self) -> bool:
+        """Return true if the entity is still in cooldown."""
+        if self._cooldown <= 0:
+            return False
+
+        if self._last_triggered_at is None:
+            return False
+
+        return monotonic() - self._last_triggered_at < self._cooldown
 
 
 def _normalize_match_value(value: Any) -> str:
@@ -126,6 +148,22 @@ def _normalize_match_value(value: Any) -> str:
         return MATCH_ANY
 
     return value_str
+
+
+def _normalize_cooldown(value: Any) -> int:
+    """Normalize cooldown value."""
+    if value is None:
+        return DEFAULT_COOLDOWN_SECONDS
+
+    try:
+        cooldown = int(value)
+    except (TypeError, ValueError):
+        return DEFAULT_COOLDOWN_SECONDS
+
+    if cooldown < 0:
+        return DEFAULT_COOLDOWN_SECONDS
+
+    return cooldown
 
 
 def _match_field(expected: str, actual: Any) -> bool:
