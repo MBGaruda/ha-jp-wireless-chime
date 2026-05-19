@@ -3,22 +3,13 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Callable
 
 from homeassistant.core import Event, HomeAssistant, callback
 
 from .const import EVENT_CHIME_RECEIVED, EVENT_ESPHOME_RAW_RECEIVED
-from .protocol import ohm_07, revex_x, revex_xp
+from .protocol import decode_received
 
 _LOGGER = logging.getLogger(__name__)
-
-Decoder = Callable[[str, str | None], dict[str, Any] | None]
-
-DECODERS: dict[str, Decoder] = {
-    "revex_x": revex_x.decode_received,
-    "revex_xp": revex_xp.decode_received,
-    "ohm_07": ohm_07.decode_received,
-}
 
 
 def async_setup_receiver(hass: HomeAssistant) -> None:
@@ -39,19 +30,22 @@ def async_setup_receiver(hass: HomeAssistant) -> None:
             _LOGGER.warning("Invalid chime raw event: %s", data)
             return
 
-        decoder = DECODERS.get(str(protocol_hint))
-        if decoder is None:
-            _LOGGER.debug("Unsupported chime protocol hint: %s", protocol_hint)
-            return
-
         try:
-            decoded = decoder(str(bits), str(raw_hex) if raw_hex is not None else None)
+            decoded = decode_received(
+                protocol_hint=str(protocol_hint),
+                bits=str(bits),
+                raw_hex=str(raw_hex) if raw_hex is not None else None,
+            )
         except ValueError as err:
             _LOGGER.warning("Failed to decode chime event: %s", err)
             return
 
         if decoded is None:
-            _LOGGER.debug("Chime decoder returned no match: %s", data)
+            _LOGGER.debug(
+                "Unsupported or undecodable chime raw event: protocol_hint=%s data=%s",
+                protocol_hint,
+                data,
+            )
             return
 
         event_data = {

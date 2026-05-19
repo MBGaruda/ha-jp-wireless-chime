@@ -1,9 +1,19 @@
-"""Protocol implementations for JP Wireless Chime."""
+"""Protocol abstraction for JP Wireless Chime."""
 
-from . import ohm_07, revex_x, revex_xp
+from __future__ import annotations
+
+from .registry import (
+    ChimeProtocol,
+    PROTOCOLS,
+    decode_received,
+    generate_base64,
+    get_protocol,
+)
 
 __all__ = [
-    "ohm_07",
-    "revex_x",
-    "revex_xp",
+    "ChimeProtocol",
+    "PROTOCOLS",
+    "decode_received",
+    "generate_base64",
+    "get_protocol",
 ]
