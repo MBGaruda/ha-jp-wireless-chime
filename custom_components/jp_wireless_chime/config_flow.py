@@ -45,6 +45,9 @@ class JPWirelessChimeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         user_input: dict[str, Any] | None = None,
     ) -> config_entries.ConfigFlowResult:
         """Handle the initial step."""
+        if self._async_current_entries():
+            return self.async_abort(reason="already_configured")
+
         await self.async_set_unique_id(DOMAIN)
         self._abort_if_unique_id_configured()
 
@@ -91,9 +94,6 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
             self.config_entry.options.get(CONF_BUTTONS, [])
         )
 
-        if not self._buttons:
-            self._remove_receiver_device()
-
         if user_input is not None:
             action = user_input["action"]
 
@@ -102,9 +102,6 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
 
             if action == "remove":
                 return await self.async_step_remove()
-
-            if not self._buttons:
-                self._remove_receiver_device()
 
             return self.async_create_entry(
                 title="",
@@ -223,8 +220,6 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
     ) -> config_entries.ConfigFlowResult:
         """Remove a chime button."""
         if not self._buttons:
-            self._remove_receiver_device()
-
             return self.async_show_form(
                 step_id="remove",
                 data_schema=vol.Schema({}),
@@ -235,15 +230,13 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
             remove_button_id = str(user_input[CONF_BUTTON_ID])
 
             self._remove_button_entity(remove_button_id)
+            self._remove_button_device(remove_button_id)
 
             self._buttons = [
                 button
                 for button in self._buttons
                 if button.get(CONF_BUTTON_ID) != remove_button_id
             ]
-
-            if not self._buttons:
-                self._remove_receiver_device()
 
             return self.async_create_entry(
                 title="",
@@ -305,19 +298,19 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
             )
             entity_registry.async_remove(entity_id)
 
-    def _remove_receiver_device(self) -> None:
-        """Remove receiver device when no registered chime buttons remain."""
+    def _remove_button_device(self, button_id: str) -> None:
+        """Remove device for a registered chime button."""
         device_registry = dr.async_get(self.hass)
 
         device = device_registry.async_get_device(
-            identifiers={(DOMAIN, self.config_entry.entry_id)}
+            identifiers={(DOMAIN, f"{self.config_entry.entry_id}_{button_id}")}
         )
 
         if device is None:
             return
 
         _LOGGER.info(
-            "Removing JP Wireless Chime receiver device: %s",
+            "Removing JP Wireless Chime button device: %s",
             device.id,
         )
 

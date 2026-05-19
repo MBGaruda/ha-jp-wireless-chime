@@ -71,10 +71,11 @@ class JPWirelessChimeButtonEventEntity(EventEntity):
         self._attr_unique_id = f"{entry.entry_id}_{self._button_id}"
         self._attr_name = self._name
         self._attr_device_info = {
-            "identifiers": {(DOMAIN, entry.entry_id)},
-            "name": entry.title,
+            "identifiers": {(DOMAIN, f"{entry.entry_id}_{self._button_id}")},
+            "name": self._name,
             "manufacturer": "JP Wireless Chime",
-            "model": "Wireless Chime Receiver",
+            "model": "Wireless Chime Button",
+            "via_device": (DOMAIN, entry.entry_id),
         }
 
     async def async_added_to_hass(self) -> None:
