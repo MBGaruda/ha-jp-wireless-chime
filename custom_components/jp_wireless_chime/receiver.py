@@ -29,8 +29,7 @@ def async_setup_receiver(hass: HomeAssistant) -> Callable[[], None]:
         protocol_hint = data.get("protocol_hint")
         bits = data.get("bits")
         raw_hex = data.get("raw_hex")
-        source = data.get("source")
-        receiver_id = data.get("device_id")
+        receiver = data.get("source")
 
         if not protocol_hint or not bits:
             _LOGGER.warning("Invalid chime raw event: %s", data)
@@ -56,8 +55,7 @@ def async_setup_receiver(hass: HomeAssistant) -> Callable[[], None]:
 
         event_data = {
             **decoded,
-            "source": source,
-            "receiver_id": receiver_id,
+            "receiver": str(receiver) if receiver is not None else None,
         }
 
         hass.bus.async_fire(EVENT_CHIME_RECEIVED, event_data)

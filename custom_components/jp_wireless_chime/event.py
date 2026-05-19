@@ -16,7 +16,7 @@ from .const import (
     CONF_MELODY,
     CONF_NAME,
     CONF_PROTOCOL,
-    CONF_RECEIVER_ID,
+    CONF_RECEIVER,
     DATA_EVENT_ENTITIES,
     DOMAIN,
     EVENT_TYPE_PRESSED,
@@ -60,7 +60,7 @@ class JPWirelessChimeButtonEventEntity(EventEntity):
         self._protocol = str(button[CONF_PROTOCOL])
         self._channel = _normalize_match_value(button.get(CONF_CHANNEL))
         self._melody = _normalize_match_value(button.get(CONF_MELODY))
-        self._receiver_id = _normalize_match_value(button.get(CONF_RECEIVER_ID))
+        self._receiver = _normalize_match_value(button.get(CONF_RECEIVER))
 
         self._attr_unique_id = f"{entry.entry_id}_{self._button_id}"
         self._attr_name = self._name
@@ -89,7 +89,7 @@ class JPWirelessChimeButtonEventEntity(EventEntity):
             "protocol": self._protocol,
             "channel": self._channel,
             "melody": self._melody,
-            "receiver_id": self._receiver_id,
+            "receiver": self._receiver,
         }
 
     def matches(self, event_data: dict[str, Any]) -> bool:
@@ -98,7 +98,7 @@ class JPWirelessChimeButtonEventEntity(EventEntity):
             str(event_data.get("protocol")) == self._protocol
             and _match_field(self._channel, event_data.get("channel"))
             and _match_field(self._melody, event_data.get("melody"))
-            and _match_field(self._receiver_id, event_data.get("receiver_id"))
+            and _match_field(self._receiver, event_data.get("receiver"))
         )
 
     def trigger_pressed(self, event_data: dict[str, Any]) -> None:
@@ -109,8 +109,7 @@ class JPWirelessChimeButtonEventEntity(EventEntity):
                 "protocol": event_data.get("protocol"),
                 "channel": event_data.get("channel"),
                 "melody": event_data.get("melody"),
-                "source": event_data.get("source"),
-                "receiver_id": event_data.get("receiver_id"),
+                "receiver": event_data.get("receiver"),
             },
         )
         self.async_write_ha_state()

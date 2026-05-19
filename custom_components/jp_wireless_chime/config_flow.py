@@ -23,7 +23,7 @@ from .const import (
     CONF_MELODY,
     CONF_NAME,
     CONF_PROTOCOL,
-    CONF_RECEIVER_ID,
+    CONF_RECEIVER,
     DOMAIN,
     MATCH_ANY,
     SUPPORTED_PROTOCOLS,
@@ -142,7 +142,7 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
             protocol = str(user_input[CONF_PROTOCOL])
             channel = _normalize_wildcard_value(user_input.get(CONF_CHANNEL))
             melody = _normalize_wildcard_value(user_input.get(CONF_MELODY))
-            receiver_id = _normalize_wildcard_value(user_input.get(CONF_RECEIVER_ID))
+            receiver = _normalize_wildcard_value(user_input.get(CONF_RECEIVER))
 
             if channel != MATCH_ANY and melody != MATCH_ANY:
                 try:
@@ -165,7 +165,7 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
                         CONF_PROTOCOL: protocol,
                         CONF_CHANNEL: channel,
                         CONF_MELODY: melody,
-                        CONF_RECEIVER_ID: receiver_id,
+                        CONF_RECEIVER: receiver,
                     }
                 )
 
@@ -189,7 +189,7 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
                 ),
                 vol.Optional(CONF_CHANNEL, default=MATCH_ANY): str,
                 vol.Optional(CONF_MELODY, default=MATCH_ANY): str,
-                vol.Optional(CONF_RECEIVER_ID, default=MATCH_ANY): str,
+                vol.Optional(CONF_RECEIVER, default=MATCH_ANY): str,
             }
         )
 

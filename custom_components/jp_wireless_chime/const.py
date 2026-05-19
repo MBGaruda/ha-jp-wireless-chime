@@ -11,7 +11,7 @@ CONF_REMOTE_ENTITY_ID = "remote_entity_id"
 CONF_NAME = "name"
 CONF_BUTTONS = "buttons"
 CONF_BUTTON_ID = "id"
-CONF_RECEIVER_ID = "receiver_id"
+CONF_RECEIVER = "receiver"
 
 MATCH_ANY = "*"
 

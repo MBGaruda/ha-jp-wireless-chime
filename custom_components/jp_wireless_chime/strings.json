@@ -30,7 +30,7 @@
           "protocol": "Protocol",
           "channel": "Channel",
           "melody": "Melody",
-          "receiver_id": "Receiver ID"
+          "receiver": "Receiver"
         }
       },
       "remove": {
