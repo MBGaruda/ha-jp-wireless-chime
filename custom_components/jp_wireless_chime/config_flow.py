@@ -11,6 +11,7 @@ import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.core import callback
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.selector import selector
 from homeassistant.util import slugify
@@ -88,6 +89,9 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
             self.config_entry.options.get(CONF_BUTTONS, [])
         )
 
+        if not self._buttons:
+            self._remove_receiver_device()
+
         if user_input is not None:
             action = user_input["action"]
 
@@ -96,6 +100,9 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
 
             if action == "remove":
                 return await self.async_step_remove()
+
+            if not self._buttons:
+                self._remove_receiver_device()
 
             return self.async_create_entry(
                 title="",
@@ -198,6 +205,8 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
     ) -> config_entries.ConfigFlowResult:
         """Remove a chime button."""
         if not self._buttons:
+            self._remove_receiver_device()
+
             return self.async_show_form(
                 step_id="remove",
                 data_schema=vol.Schema({}),
@@ -207,31 +216,16 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
         if user_input is not None:
             remove_button_id = str(user_input[CONF_BUTTON_ID])
 
-            # Entity Registry cleanup
-            entity_registry = er.async_get(self.hass)
-
-            unique_id = (
-                f"{self.config_entry.entry_id}_{remove_button_id}"
-            )
-
-            entity_id = entity_registry.async_get_entity_id(
-                "event",
-                DOMAIN,
-                unique_id,
-            )
-
-            if entity_id:
-                _LOGGER.info(
-                    "Removing JP Wireless Chime entity: %s",
-                    entity_id,
-                )
-                entity_registry.async_remove(entity_id)
+            self._remove_button_entity(remove_button_id)
 
             self._buttons = [
                 button
                 for button in self._buttons
                 if button.get(CONF_BUTTON_ID) != remove_button_id
             ]
+
+            if not self._buttons:
+                self._remove_receiver_device()
 
             return self.async_create_entry(
                 title="",
@@ -273,6 +267,46 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
             return base_id
 
         return f"{base_id}_{uuid4().hex[:8]}"
+
+    def _remove_button_entity(self, button_id: str) -> None:
+        """Remove event entity for a registered chime button."""
+        entity_registry = er.async_get(self.hass)
+
+        unique_id = f"{self.config_entry.entry_id}_{button_id}"
+
+        entity_id = entity_registry.async_get_entity_id(
+            "event",
+            DOMAIN,
+            unique_id,
+        )
+
+        if entity_id:
+            _LOGGER.info(
+                "Removing JP Wireless Chime entity: %s",
+                entity_id,
+            )
+            entity_registry.async_remove(entity_id)
+
+    def _remove_receiver_device(self) -> None:
+        """Remove receiver device when no registered chime buttons remain."""
+        device_registry = dr.async_get(self.hass)
+
+        device = device_registry.async_get_device(
+            identifiers={(DOMAIN, self.config_entry.entry_id)}
+        )
+
+        if device is None:
+            return
+
+        _LOGGER.info(
+            "Removing JP Wireless Chime receiver device: %s",
+            device.id,
+        )
+
+        device_registry.async_update_device(
+            device_id=device.id,
+            remove_config_entry_id=self.config_entry.entry_id,
+        )
 
 
 def _normalize_wildcard_value(value: Any) -> str:
