@@ -21,7 +21,9 @@ from .const import (
     CONF_MELODY,
     CONF_NAME,
     CONF_PROTOCOL,
+    CONF_RECEIVER_ID,
     DOMAIN,
+    MATCH_ANY,
     SUPPORTED_PROTOCOLS,
 )
 from .protocol import generate_base64
@@ -75,7 +77,6 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
     def __init__(self) -> None:
         """Initialize options flow."""
         self._buttons: list[dict[str, Any]] = []
-        self._remove_button_id: str | None = None
 
     async def async_step_init(
         self,
@@ -129,17 +130,24 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            protocol = str(user_input[CONF_PROTOCOL])
-            channel = str(user_input[CONF_CHANNEL])
-            melody = str(user_input[CONF_MELODY])
             name = str(user_input[CONF_NAME])
+            protocol = str(user_input[CONF_PROTOCOL])
+            channel = _normalize_wildcard_value(user_input.get(CONF_CHANNEL))
+            melody = _normalize_wildcard_value(user_input.get(CONF_MELODY))
+            receiver_id = _normalize_wildcard_value(user_input.get(CONF_RECEIVER_ID))
 
-            try:
-                generate_base64(protocol=protocol, channel=channel, melody=melody)
-            except Exception as err:  # noqa: BLE001
-                _LOGGER.debug("Invalid chime button configuration: %s", err)
-                errors["base"] = "invalid_chime_button"
-            else:
+            if channel != MATCH_ANY and melody != MATCH_ANY:
+                try:
+                    generate_base64(
+                        protocol=protocol,
+                        channel=channel,
+                        melody=melody,
+                    )
+                except Exception as err:  # noqa: BLE001
+                    _LOGGER.debug("Invalid chime button configuration: %s", err)
+                    errors["base"] = "invalid_chime_button"
+
+            if not errors:
                 button_id = self._make_button_id(name)
 
                 self._buttons.append(
@@ -149,6 +157,7 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
                         CONF_PROTOCOL: protocol,
                         CONF_CHANNEL: channel,
                         CONF_MELODY: melody,
+                        CONF_RECEIVER_ID: receiver_id,
                     }
                 )
 
@@ -170,8 +179,9 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
                         }
                     }
                 ),
-                vol.Required(CONF_CHANNEL): str,
-                vol.Required(CONF_MELODY): str,
+                vol.Optional(CONF_CHANNEL, default=MATCH_ANY): str,
+                vol.Optional(CONF_MELODY, default=MATCH_ANY): str,
+                vol.Optional(CONF_RECEIVER_ID, default=MATCH_ANY): str,
             }
         )
 
@@ -242,3 +252,19 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
             return base_id
 
         return f"{base_id}_{uuid4().hex[:8]}"
+
+
+def _normalize_wildcard_value(value: Any) -> str:
+    """Normalize optional match value.
+
+    Empty value means wildcard.
+    """
+    if value is None:
+        return MATCH_ANY
+
+    value_str = str(value).strip()
+
+    if value_str == "":
+        return MATCH_ANY
+
+    return value_str

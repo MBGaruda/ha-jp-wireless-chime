@@ -24,12 +24,13 @@
       },
       "add": {
         "title": "Add chime button",
-        "description": "Register a physical wireless chime button as an event entity.",
+        "description": "Register a physical wireless chime button as an event entity. Use * or leave blank to match any channel, melody, or receiver.",
         "data": {
           "name": "Name",
           "protocol": "Protocol",
           "channel": "Channel",
-          "melody": "Melody"
+          "melody": "Melody",
+          "receiver_id": "Receiver ID"
         }
       },
       "remove": {

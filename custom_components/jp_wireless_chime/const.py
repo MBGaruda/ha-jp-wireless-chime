@@ -11,6 +11,9 @@ CONF_REMOTE_ENTITY_ID = "remote_entity_id"
 CONF_NAME = "name"
 CONF_BUTTONS = "buttons"
 CONF_BUTTON_ID = "id"
+CONF_RECEIVER_ID = "receiver_id"
+
+MATCH_ANY = "*"
 
 PROTOCOL_REVEX_X = "revex_x"
 PROTOCOL_OHM_07 = "ohm_07"
@@ -32,8 +35,6 @@ DATA_RECEIVER_UNSUB = "receiver_unsub"
 DATA_SERVICES_SETUP_DONE = "services_setup_done"
 DATA_EVENT_ENTITIES = "event_entities"
 
-# Melody aliases: user-friendly names to numeric indexes per protocol.
-# Keys are lowercase; values are 1-based integers as accepted by protocol generators.
 MELODY_ALIASES = {
     PROTOCOL_REVEX_X: {
         "chime_pingpong": 1,

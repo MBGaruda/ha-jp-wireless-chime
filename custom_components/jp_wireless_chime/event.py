@@ -16,9 +16,11 @@ from .const import (
     CONF_MELODY,
     CONF_NAME,
     CONF_PROTOCOL,
+    CONF_RECEIVER_ID,
     DATA_EVENT_ENTITIES,
     DOMAIN,
     EVENT_TYPE_PRESSED,
+    MATCH_ANY,
 )
 
 
@@ -56,8 +58,9 @@ class JPWirelessChimeButtonEventEntity(EventEntity):
         self._button_id = str(button[CONF_BUTTON_ID])
         self._name = str(button[CONF_NAME])
         self._protocol = str(button[CONF_PROTOCOL])
-        self._channel = str(button[CONF_CHANNEL])
-        self._melody = str(button[CONF_MELODY])
+        self._channel = _normalize_match_value(button.get(CONF_CHANNEL))
+        self._melody = _normalize_match_value(button.get(CONF_MELODY))
+        self._receiver_id = _normalize_match_value(button.get(CONF_RECEIVER_ID))
 
         self._attr_unique_id = f"{entry.entry_id}_{self._button_id}"
         self._attr_name = self._name
@@ -86,14 +89,16 @@ class JPWirelessChimeButtonEventEntity(EventEntity):
             "protocol": self._protocol,
             "channel": self._channel,
             "melody": self._melody,
+            "receiver_id": self._receiver_id,
         }
 
     def matches(self, event_data: dict[str, Any]) -> bool:
         """Return true if normalized chime event matches this button."""
         return (
             str(event_data.get("protocol")) == self._protocol
-            and str(event_data.get("channel")) == self._channel
-            and str(event_data.get("melody")) == self._melody
+            and _match_field(self._channel, event_data.get("channel"))
+            and _match_field(self._melody, event_data.get("melody"))
+            and _match_field(self._receiver_id, event_data.get("receiver_id"))
         )
 
     def trigger_pressed(self, event_data: dict[str, Any]) -> None:
@@ -109,3 +114,27 @@ class JPWirelessChimeButtonEventEntity(EventEntity):
             },
         )
         self.async_write_ha_state()
+
+
+def _normalize_match_value(value: Any) -> str:
+    """Normalize a match field value."""
+    if value is None:
+        return MATCH_ANY
+
+    value_str = str(value).strip()
+
+    if value_str == "":
+        return MATCH_ANY
+
+    return value_str
+
+
+def _match_field(expected: str, actual: Any) -> bool:
+    """Match a field with wildcard support."""
+    if expected == MATCH_ANY:
+        return True
+
+    if actual is None:
+        return False
+
+    return expected == str(actual)
