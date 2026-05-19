@@ -1,0 +1,48 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "JP Wireless Chime",
+        "description": "JP Wireless Chimeを設定します。",
+        "data": {
+          "name": "名前"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "JP Wireless Chimeは既に設定されています。"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "JP Wireless Chime オプション",
+        "description": "登録済みチャイムボタンを追加または削除します。",
+        "data": {
+          "action": "操作"
+        }
+      },
+      "add": {
+        "title": "チャイムボタンを追加",
+        "description": "物理ワイヤレスチャイムボタンをイベントエンティティとして登録します。",
+        "data": {
+          "name": "名前",
+          "protocol": "プロトコル",
+          "channel": "チャンネル",
+          "melody": "音色"
+        }
+      },
+      "remove": {
+        "title": "チャイムボタンを削除",
+        "description": "登録済みチャイムボタンを削除します。",
+        "data": {
+          "id": "チャイムボタン"
+        }
+      }
+    },
+    "error": {
+      "invalid_chime_button": "プロトコル、チャンネル、音色の組み合わせが不正です。",
+      "no_buttons": "登録済みチャイムボタンがありません。"
+    }
+  }
+}

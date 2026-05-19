@@ -8,6 +8,9 @@ CONF_PROTOCOL = "protocol"
 CONF_CHANNEL = "channel"
 CONF_MELODY = "melody"
 CONF_REMOTE_ENTITY_ID = "remote_entity_id"
+CONF_NAME = "name"
+CONF_BUTTONS = "buttons"
+CONF_BUTTON_ID = "id"
 
 PROTOCOL_REVEX_X = "revex_x"
 PROTOCOL_OHM_07 = "ohm_07"
@@ -22,11 +25,17 @@ SUPPORTED_PROTOCOLS = [
 EVENT_ESPHOME_RAW_RECEIVED = "esphome.jp_wireless_chime_raw_received"
 EVENT_CHIME_RECEIVED = "jp_wireless_chime.received"
 
+EVENT_TYPE_PRESSED = "pressed"
+
+DATA_RECEIVER_SETUP_DONE = "receiver_setup_done"
+DATA_RECEIVER_UNSUB = "receiver_unsub"
+DATA_SERVICES_SETUP_DONE = "services_setup_done"
+DATA_EVENT_ENTITIES = "event_entities"
+
 # Melody aliases: user-friendly names to numeric indexes per protocol.
 # Keys are lowercase; values are 1-based integers as accepted by protocol generators.
 MELODY_ALIASES = {
     PROTOCOL_REVEX_X: {
-        # REVEX_X melody names (lowercase, underscore-separated)
         "chime_pingpong": 1,
         "westminster_chime": 2,
         "fur_elise": 3,
@@ -45,7 +54,6 @@ MELODY_ALIASES = {
         "siren_2": 16,
     },
     PROTOCOL_REVEX_XP: {
-        # REVEX XP supports 1-64 numeric melody values with one alias per tone.
         "dingdong_a": 1,
         "dingdong_g": 2,
         "school_bell": 3,
@@ -112,7 +120,6 @@ MELODY_ALIASES = {
         "siren_b": 64,
     },
     PROTOCOL_OHM_07: {
-        # OHM-07 melody bit patterns (lowercase)
         "yellowroseoftexas": "000",
         "westminsterchime": "001",
         "myoldkentuckyhome": "010",

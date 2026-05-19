@@ -3,16 +3,22 @@
 from __future__ import annotations
 
 import logging
+from typing import Any, Callable
 
 from homeassistant.core import Event, HomeAssistant, callback
 
-from .const import EVENT_CHIME_RECEIVED, EVENT_ESPHOME_RAW_RECEIVED
+from .const import (
+    DATA_EVENT_ENTITIES,
+    DOMAIN,
+    EVENT_CHIME_RECEIVED,
+    EVENT_ESPHOME_RAW_RECEIVED,
+)
 from .protocol import decode_received
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def async_setup_receiver(hass: HomeAssistant) -> None:
+def async_setup_receiver(hass: HomeAssistant) -> Callable[[], None]:
     """Set up ESPHome raw event receiver."""
 
     @callback
@@ -61,5 +67,21 @@ def async_setup_receiver(hass: HomeAssistant) -> None:
             event_data,
         )
 
-    hass.bus.async_listen(EVENT_ESPHOME_RAW_RECEIVED, handle_raw_received)
+        _trigger_matching_event_entities(hass, event_data)
+
+    unsub = hass.bus.async_listen(EVENT_ESPHOME_RAW_RECEIVED, handle_raw_received)
     _LOGGER.info("JP Wireless Chime receiver event bridge initialized")
+
+    return unsub
+
+
+def _trigger_matching_event_entities(
+    hass: HomeAssistant,
+    event_data: dict[str, Any],
+) -> None:
+    """Trigger registered event entities matching normalized chime event."""
+    entities = hass.data.get(DOMAIN, {}).get(DATA_EVENT_ENTITIES, {})
+
+    for entity in list(entities.values()):
+        if entity.matches(event_data):
+            entity.trigger_pressed(event_data)

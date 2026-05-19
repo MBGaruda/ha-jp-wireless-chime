@@ -6,6 +6,8 @@ import logging
 
 import voluptuous as vol
 
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, ServiceCall
 import homeassistant.helpers.config_validation as cv
 
@@ -14,6 +16,9 @@ from .const import (
     CONF_MELODY,
     CONF_PROTOCOL,
     CONF_REMOTE_ENTITY_ID,
+    DATA_RECEIVER_SETUP_DONE,
+    DATA_RECEIVER_UNSUB,
+    DATA_SERVICES_SETUP_DONE,
     DOMAIN,
     SERVICE_SEND_CHIME,
     SUPPORTED_PROTOCOLS,
@@ -23,8 +28,7 @@ from .receiver import async_setup_receiver
 
 _LOGGER = logging.getLogger(__name__)
 
-DATA_RECEIVER_SETUP_DONE = "receiver_setup_done"
-DATA_SERVICES_SETUP_DONE = "services_setup_done"
+PLATFORMS: list[Platform] = [Platform.EVENT]
 
 SEND_CHIME_SCHEMA = vol.Schema(
     {
@@ -37,7 +41,7 @@ SEND_CHIME_SCHEMA = vol.Schema(
 
 
 async def async_setup_services(hass: HomeAssistant) -> bool:
-    """Register services for JP Wireless Chime."""
+    """Register services and receiver for JP Wireless Chime."""
     domain_data = hass.data.setdefault(DOMAIN, {})
 
     if not domain_data.get(DATA_SERVICES_SETUP_DONE):
@@ -91,18 +95,36 @@ async def async_setup_services(hass: HomeAssistant) -> bool:
         domain_data[DATA_SERVICES_SETUP_DONE] = True
 
     if not domain_data.get(DATA_RECEIVER_SETUP_DONE):
-        async_setup_receiver(hass)
+        domain_data[DATA_RECEIVER_UNSUB] = async_setup_receiver(hass)
         domain_data[DATA_RECEIVER_SETUP_DONE] = True
 
-    _LOGGER.info("JP Wireless Chime initialized")
     return True
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up JP Wireless Chime from YAML configuration."""
-    return await async_setup_services(hass)
+    await async_setup_services(hass)
+    _LOGGER.info("JP Wireless Chime initialized")
+    return True
 
 
-async def async_setup_entry(hass: HomeAssistant, entry) -> bool:
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up JP Wireless Chime from a config entry."""
-    return await async_setup_services(hass)
+    await async_setup_services(hass)
+
+    entry.async_on_unload(entry.add_update_listener(async_update_listener))
+
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    _LOGGER.info("JP Wireless Chime config entry initialized")
+    return True
+
+
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Unload a JP Wireless Chime config entry."""
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
+
+async def async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Reload JP Wireless Chime when options are updated."""
+    await hass.config_entries.async_reload(entry.entry_id)

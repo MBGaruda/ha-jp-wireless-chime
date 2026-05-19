@@ -1,0 +1,48 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "JP Wireless Chime",
+        "description": "Set up JP Wireless Chime.",
+        "data": {
+          "name": "Name"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "JP Wireless Chime is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "JP Wireless Chime options",
+        "description": "Add or remove registered chime buttons.",
+        "data": {
+          "action": "Action"
+        }
+      },
+      "add": {
+        "title": "Add chime button",
+        "description": "Register a physical wireless chime button as an event entity.",
+        "data": {
+          "name": "Name",
+          "protocol": "Protocol",
+          "channel": "Channel",
+          "melody": "Melody"
+        }
+      },
+      "remove": {
+        "title": "Remove chime button",
+        "description": "Remove a registered chime button.",
+        "data": {
+          "id": "Chime button"
+        }
+      }
+    },
+    "error": {
+      "invalid_chime_button": "The protocol, channel, and melody combination is invalid.",
+      "no_buttons": "There are no registered chime buttons."
+    }
+  }
+}
