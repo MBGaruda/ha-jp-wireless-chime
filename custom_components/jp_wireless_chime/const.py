@@ -19,6 +19,9 @@ SUPPORTED_PROTOCOLS = [
     PROTOCOL_OHM_07,
 ]
 
+EVENT_ESPHOME_RAW_RECEIVED = "esphome.jp_wireless_chime_raw_received"
+EVENT_CHIME_RECEIVED = "jp_wireless_chime.received"
+
 # Melody aliases: user-friendly names to numeric indexes per protocol.
 # Keys are lowercase; values are 1-based integers as accepted by protocol generators.
 MELODY_ALIASES = {
