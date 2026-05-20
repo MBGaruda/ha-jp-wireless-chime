@@ -36,7 +36,7 @@
       },
       "learn_receive_setup": {
         "title": "Add receive button by learning",
-        "description": "Enter a name, then press the physical chime button within 60 seconds.",
+        "description": "Enter a name and cooldown, then start learning. After this step, press the physical wireless chime button within {timeout} seconds.",
         "data": {
           "name": "Name",
           "cooldown": "Cooldown"
@@ -44,13 +44,16 @@
       },
       "learn_receive_wait": {
         "title": "Waiting for chime signal",
-        "description": "Press the physical wireless chime button now. If the signal has already been received, submit this form to continue."
+        "description": "Press the physical wireless chime button now. Then select \"Check received result\" and submit. Select \"Cancel\" to stop learning.",
+        "data": {
+          "learn_action": "Action"
+        }
       },
       "learn_receive_confirm": {
         "title": "Confirm learned receive button",
-        "description": "Learned signal:\n\nProtocol: {protocol}\nChannel: {channel}\nMelody: {melody}\nReceiver: {receiver}\n\nBy default, the receive button will match any receiver. Enable the option below to match only the learned receiver.",
+        "description": "Learned signal:\n\nProtocol: {protocol}\nChannel: {channel}\nMelody: {melody}\nReceiver: {receiver}\n\nChoose how to register this learned signal, or cancel without saving.",
         "data": {
-          "use_learned_receiver": "Match only the learned receiver"
+          "learn_action": "Action"
         }
       },
       "remove_receive": {
@@ -85,7 +88,7 @@
       "no_receive_buttons": "There are no registered receive buttons.",
       "no_send_buttons": "There are no registered send buttons.",
       "learn_session_expired": "The learn session has expired. Start learning again.",
-      "learn_signal_not_received": "No chime signal has been received yet. Press the physical chime button, then submit again."
+      "learn_signal_not_received": "No chime signal has been received yet. Press the physical chime button, then check again."
     }
   }
 }

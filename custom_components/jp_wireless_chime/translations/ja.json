@@ -36,7 +36,7 @@
       },
       "learn_receive_setup": {
         "title": "受信ボタンを学習で追加",
-        "description": "名前を入力してから、60秒以内に物理チャイムボタンを押してください。",
+        "description": "名前とクールタイムを入力して学習を開始します。次の画面で、{timeout}秒以内に物理ワイヤレスチャイムボタンを押してください。",
         "data": {
           "name": "名前",
           "cooldown": "クールタイム"
@@ -44,13 +44,16 @@
       },
       "learn_receive_wait": {
         "title": "チャイム信号を待機中",
-        "description": "物理ワイヤレスチャイムボタンを押してください。既に信号を受信している場合は、このフォームを送信して次へ進んでください。"
+        "description": "物理ワイヤレスチャイムボタンを押してください。その後、「受信結果を確認」を選んで送信してください。学習を中止する場合は「キャンセル」を選んでください。",
+        "data": {
+          "learn_action": "操作"
+        }
       },
       "learn_receive_confirm": {
         "title": "学習した受信ボタンを確認",
-        "description": "学習した信号:\n\nプロトコル: {protocol}\nチャンネル: {channel}\n音色: {melody}\n受信機: {receiver}\n\n既定では、どの受信機で受信しても一致します。学習時の受信機だけに限定する場合は、以下を有効にしてください。",
+        "description": "学習した信号:\n\nプロトコル: {protocol}\nチャンネル: {channel}\n音色: {melody}\n受信機: {receiver}\n\nこの学習結果をどう登録するか選択してください。保存しない場合はキャンセルできます。",
         "data": {
-          "use_learned_receiver": "学習時の受信機だけに限定する"
+          "learn_action": "操作"
         }
       },
       "remove_receive": {
@@ -85,7 +88,7 @@
       "no_receive_buttons": "登録済み受信ボタンがありません。",
       "no_send_buttons": "登録済み送信ボタンがありません。",
       "learn_session_expired": "学習セッションが期限切れです。もう一度学習を開始してください。",
-      "learn_signal_not_received": "まだチャイム信号を受信していません。物理チャイムボタンを押してから、もう一度送信してください。"
+      "learn_signal_not_received": "まだチャイム信号を受信していません。物理チャイムボタンを押してから、もう一度確認してください。"
     }
   }
 }
