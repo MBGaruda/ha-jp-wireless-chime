@@ -69,7 +69,13 @@ class JPWirelessChimeButtonEventEntity(EventEntity):
         self._last_triggered_at: float | None = None
 
         self._attr_unique_id = f"{entry.entry_id}_{self._button_id}"
-        self._attr_name = self._name
+
+        #
+        # Device名をそのままFriendly Nameとして使いたいので、
+        # Entity名はNoneにする
+        #
+        self._attr_name = None
+
         self._attr_device_info = {
             "identifiers": {(DOMAIN, f"{entry.entry_id}_{self._button_id}")},
             "name": self._name,
@@ -137,6 +143,7 @@ class JPWirelessChimeButtonEventEntity(EventEntity):
                 "match_rule": self._match_rule,
             },
         )
+
         self.async_write_ha_state()
 
     def _is_in_cooldown(self) -> bool:
