@@ -9,15 +9,21 @@ CONF_CHANNEL = "channel"
 CONF_MELODY = "melody"
 CONF_REMOTE_ENTITY_ID = "remote_entity_id"
 CONF_NAME = "name"
-CONF_BUTTONS = "buttons"
 CONF_BUTTON_ID = "id"
 CONF_RECEIVER = "receiver"
 CONF_COOLDOWN = "cooldown"
+
+CONF_BUTTONS = "buttons"
+CONF_RECEIVE_BUTTONS = "receive_buttons"
+CONF_SEND_BUTTONS = "send_buttons"
 
 MATCH_ANY = "*"
 
 DEFAULT_COOLDOWN_SECONDS = 2
 SELF_SEND_IGNORE_SECONDS = 5
+
+DEVICE_KIND_RECEIVE = "receive"
+DEVICE_KIND_SEND = "send"
 
 PROTOCOL_REVEX_X = "revex_x"
 PROTOCOL_OHM_07 = "ohm_07"

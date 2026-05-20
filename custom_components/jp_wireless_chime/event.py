@@ -12,15 +12,16 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import (
     CONF_BUTTON_ID,
-    CONF_BUTTONS,
     CONF_CHANNEL,
     CONF_COOLDOWN,
     CONF_MELODY,
     CONF_NAME,
     CONF_PROTOCOL,
+    CONF_RECEIVE_BUTTONS,
     CONF_RECEIVER,
     DATA_EVENT_ENTITIES,
     DEFAULT_COOLDOWN_SECONDS,
+    DEVICE_KIND_RECEIVE,
     DOMAIN,
     EVENT_TYPE_PRESSED,
     MATCH_ANY,
@@ -33,18 +34,18 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up JP Wireless Chime event entities."""
-    buttons = entry.options.get(CONF_BUTTONS, [])
+    buttons = entry.options.get(CONF_RECEIVE_BUTTONS, [])
 
     entities = [
-        JPWirelessChimeButtonEventEntity(entry, button)
+        JPWirelessChimeReceiveEventEntity(entry, button)
         for button in buttons
     ]
 
     async_add_entities(entities)
 
 
-class JPWirelessChimeButtonEventEntity(EventEntity):
-    """Event entity for a registered wireless chime button."""
+class JPWirelessChimeReceiveEventEntity(EventEntity):
+    """Event entity for a registered wireless chime receive button."""
 
     _attr_event_types = [EVENT_TYPE_PRESSED]
     _attr_has_entity_name = True
@@ -68,19 +69,17 @@ class JPWirelessChimeButtonEventEntity(EventEntity):
 
         self._last_triggered_at: float | None = None
 
-        self._attr_unique_id = f"{entry.entry_id}_{self._button_id}"
-
-        #
-        # Device名をそのままFriendly Nameとして使いたいので、
-        # Entity名はNoneにする
-        #
+        self._attr_unique_id = (
+            f"{entry.entry_id}_{DEVICE_KIND_RECEIVE}_{self._button_id}"
+        )
         self._attr_name = None
-
         self._attr_device_info = {
-            "identifiers": {(DOMAIN, f"{entry.entry_id}_{self._button_id}")},
+            "identifiers": {
+                (DOMAIN, f"{entry.entry_id}_{DEVICE_KIND_RECEIVE}_{self._button_id}")
+            },
             "name": self._name,
             "manufacturer": "JP Wireless Chime",
-            "model": "Wireless Chime Button",
+            "model": "Wireless Chime Receive Button",
         }
 
     async def async_added_to_hass(self) -> None:
@@ -99,6 +98,7 @@ class JPWirelessChimeButtonEventEntity(EventEntity):
         """Return entity attributes."""
         return {
             "button_id": self._button_id,
+            "direction": "receive",
             "protocol": self._protocol,
             "channel": self._channel,
             "melody": self._melody,

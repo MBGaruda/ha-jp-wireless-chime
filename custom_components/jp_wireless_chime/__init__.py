@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
 
 import voluptuous as vol
 
@@ -15,15 +14,18 @@ from homeassistant.helpers import entity_registry as er
 import homeassistant.helpers.config_validation as cv
 
 from .const import (
-    CONF_BUTTONS,
     CONF_BUTTON_ID,
     CONF_CHANNEL,
     CONF_MELODY,
     CONF_PROTOCOL,
+    CONF_RECEIVE_BUTTONS,
     CONF_REMOTE_ENTITY_ID,
+    CONF_SEND_BUTTONS,
     DATA_RECEIVER_SETUP_DONE,
     DATA_RECEIVER_UNSUB,
     DATA_SERVICES_SETUP_DONE,
+    DEVICE_KIND_RECEIVE,
+    DEVICE_KIND_SEND,
     DOMAIN,
     SERVICE_SEND_CHIME,
     SUPPORTED_PROTOCOLS,
@@ -34,7 +36,7 @@ from .self_send import register_self_send_ignore
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS: list[Platform] = [Platform.EVENT]
+PLATFORMS: list[Platform] = [Platform.EVENT, Platform.BUTTON]
 
 SEND_CHIME_SCHEMA = vol.Schema(
     {
@@ -81,8 +83,6 @@ async def async_setup_services(hass: HomeAssistant) -> bool:
                 )
 
                 register_self_send_ignore(hass, normalized_command)
-
-                _LOGGER.debug("JP Wireless Chime base64 payload: %s", base64_code)
 
                 await hass.services.async_call(
                     "remote",
@@ -149,20 +149,22 @@ async def async_remove_config_entry_device(
     entry: ConfigEntry,
     device_entry: dr.DeviceEntry,
 ) -> bool:
-    """Remove a chime button device from the config entry.
+    """Remove a chime device from the config entry."""
+    parsed = _parse_chime_device_identifier(entry, device_entry)
 
-    This is called by Home Assistant when the user removes a device from the UI.
-    """
-    button_id = _get_button_id_from_device_entry(entry, device_entry)
-
-    if button_id is None:
-        _LOGGER.debug(
-            "Device is not a JP Wireless Chime button device: %s",
-            device_entry.id,
-        )
+    if parsed is None:
         return False
 
-    buttons = list(entry.options.get(CONF_BUTTONS, []))
+    device_kind, button_id = parsed
+
+    if device_kind == DEVICE_KIND_RECEIVE:
+        options_key = CONF_RECEIVE_BUTTONS
+    elif device_kind == DEVICE_KIND_SEND:
+        options_key = CONF_SEND_BUTTONS
+    else:
+        return False
+
+    buttons = list(entry.options.get(options_key, []))
     remaining_buttons = [
         button
         for button in buttons
@@ -170,32 +172,30 @@ async def async_remove_config_entry_device(
     ]
 
     if len(remaining_buttons) == len(buttons):
-        _LOGGER.debug(
-            "No matching JP Wireless Chime button found for device removal: button_id=%s",
-            button_id,
-        )
         return False
 
-    _remove_button_entity(hass, entry, button_id)
+    _remove_chime_entity(hass, entry, device_kind, button_id)
 
     new_options = dict(entry.options)
-    new_options[CONF_BUTTONS] = remaining_buttons
+    new_options[options_key] = remaining_buttons
     hass.config_entries.async_update_entry(entry, options=new_options)
 
     _LOGGER.info(
-        "Removed JP Wireless Chime button via device removal: button_id=%s",
+        "Removed JP Wireless Chime %s device via device removal: button_id=%s",
+        device_kind,
         button_id,
     )
 
     return True
 
 
-def _get_button_id_from_device_entry(
+def _parse_chime_device_identifier(
     entry: ConfigEntry,
     device_entry: dr.DeviceEntry,
-) -> str | None:
-    """Extract button ID from a JP Wireless Chime button device entry."""
-    expected_prefix = f"{entry.entry_id}_"
+) -> tuple[str, str] | None:
+    """Extract device kind and button ID from a chime device entry."""
+    receive_prefix = f"{entry.entry_id}_{DEVICE_KIND_RECEIVE}_"
+    send_prefix = f"{entry.entry_id}_{DEVICE_KIND_SEND}_"
 
     for domain, identifier in device_entry.identifiers:
         if domain != DOMAIN:
@@ -203,36 +203,34 @@ def _get_button_id_from_device_entry(
 
         identifier_str = str(identifier)
 
-        if not identifier_str.startswith(expected_prefix):
-            continue
+        if identifier_str.startswith(receive_prefix):
+            return DEVICE_KIND_RECEIVE, identifier_str[len(receive_prefix):]
 
-        button_id = identifier_str[len(expected_prefix):]
-
-        if button_id:
-            return button_id
+        if identifier_str.startswith(send_prefix):
+            return DEVICE_KIND_SEND, identifier_str[len(send_prefix):]
 
     return None
 
 
-def _remove_button_entity(
+def _remove_chime_entity(
     hass: HomeAssistant,
     entry: ConfigEntry,
+    device_kind: str,
     button_id: str,
 ) -> None:
-    """Remove event entity for a registered chime button."""
+    """Remove entity for a registered chime device."""
     entity_registry = er.async_get(hass)
 
-    unique_id = f"{entry.entry_id}_{button_id}"
+    unique_id = f"{entry.entry_id}_{device_kind}_{button_id}"
+
+    platform = "event" if device_kind == DEVICE_KIND_RECEIVE else "button"
 
     entity_id = entity_registry.async_get_entity_id(
-        "event",
+        platform,
         DOMAIN,
         unique_id,
     )
 
     if entity_id:
-        _LOGGER.info(
-            "Removing JP Wireless Chime entity: %s",
-            entity_id,
-        )
+        _LOGGER.info("Removing JP Wireless Chime entity: %s", entity_id)
         entity_registry.async_remove(entity_id)

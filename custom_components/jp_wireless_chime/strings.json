@@ -17,13 +17,13 @@
     "step": {
       "init": {
         "title": "JP Wireless Chime options",
-        "description": "Add or remove registered chime buttons.",
+        "description": "Add or remove receive/send chime buttons.",
         "data": {
           "action": "Action"
         }
       },
-      "add": {
-        "title": "Add chime button",
+      "add_receive": {
+        "title": "Add receive button",
         "description": "Register a physical wireless chime button as an event entity. Use * or leave blank to match any channel, melody, or receiver.",
         "data": {
           "name": "Name",
@@ -34,17 +34,37 @@
           "cooldown": "Cooldown"
         }
       },
-      "remove": {
-        "title": "Remove chime button/device",
-        "description": "Remove a registered chime button, including its device and event entity.",
+      "remove_receive": {
+        "title": "Remove receive button/device",
+        "description": "Remove a registered receive button, including its device and event entity.",
         "data": {
-          "id": "Chime button"
+          "id": "Receive button"
+        }
+      },
+      "add_send": {
+        "title": "Add send button",
+        "description": "Register a send button entity for transmitting a configured wireless chime signal.",
+        "data": {
+          "name": "Name",
+          "protocol": "Protocol",
+          "channel": "Channel",
+          "melody": "Melody",
+          "remote_entity_id": "Broadlink remote entity"
+        }
+      },
+      "remove_send": {
+        "title": "Remove send button/device",
+        "description": "Remove a registered send button, including its device and button entity.",
+        "data": {
+          "id": "Send button"
         }
       }
     },
     "error": {
       "invalid_chime_button": "The protocol, channel, and melody combination is invalid.",
-      "no_buttons": "There are no registered chime buttons."
+      "invalid_remote_entity": "The remote entity is invalid.",
+      "no_receive_buttons": "There are no registered receive buttons.",
+      "no_send_buttons": "There are no registered send buttons."
     }
   }
 }

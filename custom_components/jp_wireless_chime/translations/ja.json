@@ -17,13 +17,13 @@
     "step": {
       "init": {
         "title": "JP Wireless Chime オプション",
-        "description": "登録済みチャイムボタンを追加または削除します。",
+        "description": "受信用/送信用チャイムボタンを追加または削除します。",
         "data": {
           "action": "操作"
         }
       },
-      "add": {
-        "title": "チャイムボタンを追加",
+      "add_receive": {
+        "title": "受信ボタンを追加",
         "description": "物理ワイヤレスチャイムボタンをイベントエンティティとして登録します。チャンネル、音色、受信機は * または空欄でワイルドカードになります。",
         "data": {
           "name": "名前",
@@ -34,17 +34,37 @@
           "cooldown": "クールタイム"
         }
       },
-      "remove": {
-        "title": "チャイムボタン/デバイスを削除",
-        "description": "登録済みチャイムボタンを、デバイスおよびイベントエンティティごと削除します。",
+      "remove_receive": {
+        "title": "受信ボタン/デバイスを削除",
+        "description": "登録済み受信ボタンを、デバイスおよびイベントエンティティごと削除します。",
         "data": {
-          "id": "チャイムボタン"
+          "id": "受信ボタン"
+        }
+      },
+      "add_send": {
+        "title": "送信ボタンを追加",
+        "description": "設定済みのワイヤレスチャイム信号を送信するボタンエンティティを登録します。",
+        "data": {
+          "name": "名前",
+          "protocol": "プロトコル",
+          "channel": "チャンネル",
+          "melody": "音色",
+          "remote_entity_id": "Broadlinkリモートエンティティ"
+        }
+      },
+      "remove_send": {
+        "title": "送信ボタン/デバイスを削除",
+        "description": "登録済み送信ボタンを、デバイスおよびボタンエンティティごと削除します。",
+        "data": {
+          "id": "送信ボタン"
         }
       }
     },
     "error": {
       "invalid_chime_button": "プロトコル、チャンネル、音色の組み合わせが不正です。",
-      "no_buttons": "登録済みチャイムボタンがありません。"
+      "invalid_remote_entity": "リモートエンティティが不正です。",
+      "no_receive_buttons": "登録済み受信ボタンがありません。",
+      "no_send_buttons": "登録済み送信ボタンがありません。"
     }
   }
 }
