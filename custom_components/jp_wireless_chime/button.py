@@ -72,6 +72,10 @@ class JPWirelessChimeSendButtonEntity(ButtonEntity):
             "name": self._name,
             "manufacturer": "JP Wireless Chime",
             "model": "Wireless Chime Send Button",
+            "via_device": (
+                DOMAIN,
+                f"{entry.entry_id}_{DEVICE_KIND_SEND}_hub",
+            ),
         }
 
     @property

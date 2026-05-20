@@ -80,6 +80,10 @@ class JPWirelessChimeReceiveEventEntity(EventEntity):
             "name": self._name,
             "manufacturer": "JP Wireless Chime",
             "model": "Wireless Chime Receive Button",
+            "via_device": (
+                DOMAIN,
+                f"{entry.entry_id}_{DEVICE_KIND_RECEIVE}_hub",
+            ),
         }
 
     async def async_added_to_hass(self) -> None:
