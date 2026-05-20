@@ -35,8 +35,8 @@
         }
       },
       "remove": {
-        "title": "Remove chime button",
-        "description": "Remove a registered chime button.",
+        "title": "Remove chime button/device",
+        "description": "Remove a registered chime button, including its device and event entity.",
         "data": {
           "id": "Chime button"
         }

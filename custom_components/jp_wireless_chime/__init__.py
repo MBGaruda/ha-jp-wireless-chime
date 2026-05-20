@@ -9,7 +9,6 @@ import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, ServiceCall
-from homeassistant.helpers import device_registry as dr
 import homeassistant.helpers.config_validation as cv
 
 from .const import (
@@ -111,19 +110,6 @@ async def async_setup_services(hass: HomeAssistant) -> bool:
     return True
 
 
-def _ensure_hub_device(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Ensure the parent hub device exists."""
-    device_registry = dr.async_get(hass)
-
-    device_registry.async_get_or_create(
-        config_entry_id=entry.entry_id,
-        identifiers={(DOMAIN, entry.entry_id)},
-        manufacturer="JP Wireless Chime",
-        name=entry.title,
-        model="Wireless Chime Hub",
-    )
-
-
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up JP Wireless Chime from YAML configuration."""
     await async_setup_services(hass)
@@ -134,8 +120,6 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up JP Wireless Chime from a config entry."""
     await async_setup_services(hass)
-
-    _ensure_hub_device(hass, entry)
 
     entry.async_on_unload(entry.add_update_listener(async_update_listener))
 

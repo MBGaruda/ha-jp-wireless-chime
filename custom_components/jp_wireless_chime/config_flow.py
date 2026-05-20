@@ -115,8 +115,11 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
                         "select": {
                             "options": [
                                 {"value": "add", "label": "Add chime button"},
-                                {"value": "remove", "label": "Remove chime button"},
-                                {"value": "finish", "label": "Finish"},
+                                {
+                                    "value": "remove",
+                                    "label": "Remove chime button/device",
+                                },
+                                {"value": "close", "label": "Close"},
                             ]
                         }
                     }
