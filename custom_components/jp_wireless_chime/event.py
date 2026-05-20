@@ -49,6 +49,7 @@ class JPWirelessChimeReceiveEventEntity(EventEntity):
 
     _attr_event_types = [EVENT_TYPE_PRESSED]
     _attr_has_entity_name = True
+    _attr_icon = "mdi:bell-ring-outline"
 
     def __init__(
         self,
@@ -80,10 +81,6 @@ class JPWirelessChimeReceiveEventEntity(EventEntity):
             "name": self._name,
             "manufacturer": "JP Wireless Chime",
             "model": "Wireless Chime Receive Button",
-            "via_device": (
-                DOMAIN,
-                f"{entry.entry_id}_{DEVICE_KIND_RECEIVE}_hub",
-            ),
         }
 
     async def async_added_to_hass(self) -> None:

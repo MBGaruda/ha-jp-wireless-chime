@@ -107,27 +107,6 @@ async def async_setup_services(hass: HomeAssistant) -> bool:
     return True
 
 
-def _ensure_direction_hubs(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Create receive/send hub devices."""
-    device_registry = dr.async_get(hass)
-
-    device_registry.async_get_or_create(
-        config_entry_id=entry.entry_id,
-        identifiers={(DOMAIN, _hub_identifier(entry, DEVICE_KIND_RECEIVE))},
-        manufacturer="JP Wireless Chime",
-        name="JP Wireless Chime Receive",
-        model="Wireless Chime Receive Hub",
-    )
-
-    device_registry.async_get_or_create(
-        config_entry_id=entry.entry_id,
-        identifiers={(DOMAIN, _hub_identifier(entry, DEVICE_KIND_SEND))},
-        manufacturer="JP Wireless Chime",
-        name="JP Wireless Chime Send",
-        model="Wireless Chime Send Hub",
-    )
-
-
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up JP Wireless Chime from YAML configuration."""
     await async_setup_services(hass)
@@ -138,7 +117,6 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up JP Wireless Chime from a config entry."""
     await async_setup_services(hass)
-    _ensure_direction_hubs(hass, entry)
 
     entry.async_on_unload(entry.add_update_listener(async_update_listener))
 
@@ -203,11 +181,6 @@ async def async_remove_config_entry_device(
     return True
 
 
-def _hub_identifier(entry: ConfigEntry, device_kind: str) -> str:
-    """Return hub identifier for a direction."""
-    return f"{entry.entry_id}_{device_kind}_hub"
-
-
 def _button_identifier(entry: ConfigEntry, device_kind: str, button_id: str) -> str:
     """Return button device identifier."""
     return f"{entry.entry_id}_{device_kind}_{button_id}"
@@ -226,12 +199,6 @@ def _parse_chime_device_identifier(
             continue
 
         identifier_str = str(identifier)
-
-        if identifier_str == _hub_identifier(entry, DEVICE_KIND_RECEIVE):
-            return None
-
-        if identifier_str == _hub_identifier(entry, DEVICE_KIND_SEND):
-            return None
 
         if identifier_str.startswith(receive_prefix):
             return DEVICE_KIND_RECEIVE, identifier_str[len(receive_prefix):]
