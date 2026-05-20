@@ -13,6 +13,14 @@
 - REVEX XPシリーズ
 - OHM 07シリーズ(品番が07で始まるワイヤレスチャイムシリーズ)
 
+関連リポジトリ：
+
+- ha-jp-wireless-chime
+  https://github.com/MBGaruda/ha-jp-wireless-chime
+
+- esphome-jp-wireless-chime
+  https://github.com/MBGaruda/esphome-jp-wireless-chime
+
 ---
 
 # 主な機能

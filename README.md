@@ -13,6 +13,14 @@ Currently supported series:
 - REVEX XP Series
 - OHM 07 Series (wireless chime series with model numbers starting with 07)
 
+Related repositories:
+
+- ha-jp-wireless-chime  
+  https://github.com/MBGaruda/ha-jp-wireless-chime
+
+- esphome-jp-wireless-chime  
+  https://github.com/MBGaruda/esphome-jp-wireless-chime
+
 ---
 
 # Main Features
