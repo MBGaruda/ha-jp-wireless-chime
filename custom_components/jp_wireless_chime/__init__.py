@@ -3,15 +3,20 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 import voluptuous as vol
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import entity_registry as er
 import homeassistant.helpers.config_validation as cv
 
 from .const import (
+    CONF_BUTTONS,
+    CONF_BUTTON_ID,
     CONF_CHANNEL,
     CONF_MELODY,
     CONF_PROTOCOL,
@@ -137,3 +142,97 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Reload JP Wireless Chime when options are updated."""
     await hass.config_entries.async_reload(entry.entry_id)
+
+
+async def async_remove_config_entry_device(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    device_entry: dr.DeviceEntry,
+) -> bool:
+    """Remove a chime button device from the config entry.
+
+    This is called by Home Assistant when the user removes a device from the UI.
+    """
+    button_id = _get_button_id_from_device_entry(entry, device_entry)
+
+    if button_id is None:
+        _LOGGER.debug(
+            "Device is not a JP Wireless Chime button device: %s",
+            device_entry.id,
+        )
+        return False
+
+    buttons = list(entry.options.get(CONF_BUTTONS, []))
+    remaining_buttons = [
+        button
+        for button in buttons
+        if str(button.get(CONF_BUTTON_ID)) != button_id
+    ]
+
+    if len(remaining_buttons) == len(buttons):
+        _LOGGER.debug(
+            "No matching JP Wireless Chime button found for device removal: button_id=%s",
+            button_id,
+        )
+        return False
+
+    _remove_button_entity(hass, entry, button_id)
+
+    new_options = dict(entry.options)
+    new_options[CONF_BUTTONS] = remaining_buttons
+    hass.config_entries.async_update_entry(entry, options=new_options)
+
+    _LOGGER.info(
+        "Removed JP Wireless Chime button via device removal: button_id=%s",
+        button_id,
+    )
+
+    return True
+
+
+def _get_button_id_from_device_entry(
+    entry: ConfigEntry,
+    device_entry: dr.DeviceEntry,
+) -> str | None:
+    """Extract button ID from a JP Wireless Chime button device entry."""
+    expected_prefix = f"{entry.entry_id}_"
+
+    for domain, identifier in device_entry.identifiers:
+        if domain != DOMAIN:
+            continue
+
+        identifier_str = str(identifier)
+
+        if not identifier_str.startswith(expected_prefix):
+            continue
+
+        button_id = identifier_str[len(expected_prefix):]
+
+        if button_id:
+            return button_id
+
+    return None
+
+
+def _remove_button_entity(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    button_id: str,
+) -> None:
+    """Remove event entity for a registered chime button."""
+    entity_registry = er.async_get(hass)
+
+    unique_id = f"{entry.entry_id}_{button_id}"
+
+    entity_id = entity_registry.async_get_entity_id(
+        "event",
+        DOMAIN,
+        unique_id,
+    )
+
+    if entity_id:
+        _LOGGER.info(
+            "Removing JP Wireless Chime entity: %s",
+            entity_id,
+        )
+        entity_registry.async_remove(entity_id)

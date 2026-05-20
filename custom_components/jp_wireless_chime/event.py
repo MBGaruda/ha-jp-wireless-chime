@@ -92,12 +92,24 @@ class JPWirelessChimeButtonEventEntity(EventEntity):
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return entity attributes."""
         return {
+            "button_id": self._button_id,
             "protocol": self._protocol,
             "channel": self._channel,
             "melody": self._melody,
             "receiver": self._receiver,
             "cooldown": self._cooldown,
+            "match_rule": self._match_rule,
         }
+
+    @property
+    def _match_rule(self) -> str:
+        """Return human-readable match rule."""
+        return (
+            f"protocol={self._protocol}, "
+            f"channel={self._channel}, "
+            f"melody={self._melody}, "
+            f"receiver={self._receiver}"
+        )
 
     def matches(self, event_data: dict[str, Any]) -> bool:
         """Return true if normalized chime event matches this button."""
@@ -122,6 +134,7 @@ class JPWirelessChimeButtonEventEntity(EventEntity):
                 "channel": event_data.get("channel"),
                 "melody": event_data.get("melody"),
                 "receiver": event_data.get("receiver"),
+                "match_rule": self._match_rule,
             },
         )
         self.async_write_ha_state()

@@ -103,11 +103,6 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
             if action == "remove":
                 return await self.async_step_remove()
 
-            return self.async_create_entry(
-                title="",
-                data={CONF_BUTTONS: self._buttons},
-            )
-
         schema = vol.Schema(
             {
                 vol.Required("action", default="add"): selector(
@@ -119,7 +114,6 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
                                     "value": "remove",
                                     "label": "Remove chime button/device",
                                 },
-                                {"value": "close", "label": "Close"},
                             ]
                         }
                     }
