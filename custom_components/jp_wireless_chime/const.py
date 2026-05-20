@@ -12,6 +12,7 @@ CONF_NAME = "name"
 CONF_BUTTON_ID = "id"
 CONF_RECEIVER = "receiver"
 CONF_COOLDOWN = "cooldown"
+CONF_USE_LEARNED_RECEIVER = "use_learned_receiver"
 
 CONF_BUTTONS = "buttons"
 CONF_RECEIVE_BUTTONS = "receive_buttons"
@@ -21,6 +22,7 @@ MATCH_ANY = "*"
 
 DEFAULT_COOLDOWN_SECONDS = 2
 SELF_SEND_IGNORE_SECONDS = 5
+LEARN_TIMEOUT_SECONDS = 60
 
 DEVICE_KIND_RECEIVE = "receive"
 DEVICE_KIND_SEND = "send"
@@ -45,6 +47,7 @@ DATA_RECEIVER_UNSUB = "receiver_unsub"
 DATA_SERVICES_SETUP_DONE = "services_setup_done"
 DATA_EVENT_ENTITIES = "event_entities"
 DATA_SELF_SEND_IGNORE = "self_send_ignore"
+DATA_LEARN_SESSION = "learn_session"
 
 MELODY_ALIASES = {
     PROTOCOL_REVEX_X: {

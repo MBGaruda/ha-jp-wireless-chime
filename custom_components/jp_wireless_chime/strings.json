@@ -23,7 +23,7 @@
         }
       },
       "add_receive": {
-        "title": "Add receive button",
+        "title": "Add receive button manually",
         "description": "Register a physical wireless chime button as an event entity. Use * or leave blank to match any channel, melody, or receiver.",
         "data": {
           "name": "Name",
@@ -32,6 +32,25 @@
           "melody": "Melody",
           "receiver": "Receiver",
           "cooldown": "Cooldown"
+        }
+      },
+      "learn_receive_setup": {
+        "title": "Add receive button by learning",
+        "description": "Enter a name, then press the physical chime button within 60 seconds.",
+        "data": {
+          "name": "Name",
+          "cooldown": "Cooldown"
+        }
+      },
+      "learn_receive_wait": {
+        "title": "Waiting for chime signal",
+        "description": "Press the physical wireless chime button now. If the signal has already been received, submit this form to continue."
+      },
+      "learn_receive_confirm": {
+        "title": "Confirm learned receive button",
+        "description": "Learned signal:\n\nProtocol: {protocol}\nChannel: {channel}\nMelody: {melody}\nReceiver: {receiver}\n\nBy default, the receive button will match any receiver. Enable the option below to match only the learned receiver.",
+        "data": {
+          "use_learned_receiver": "Match only the learned receiver"
         }
       },
       "remove_receive": {
@@ -64,7 +83,9 @@
       "invalid_chime_button": "The protocol, channel, and melody combination is invalid.",
       "invalid_remote_entity": "The remote entity is invalid.",
       "no_receive_buttons": "There are no registered receive buttons.",
-      "no_send_buttons": "There are no registered send buttons."
+      "no_send_buttons": "There are no registered send buttons.",
+      "learn_session_expired": "The learn session has expired. Start learning again.",
+      "learn_signal_not_received": "No chime signal has been received yet. Press the physical chime button, then submit again."
     }
   }
 }

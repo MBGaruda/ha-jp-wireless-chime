@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import logging
+from time import monotonic
 from typing import Any, Callable
 
 from homeassistant.core import Event, HomeAssistant, callback
 
 from .const import (
     DATA_EVENT_ENTITIES,
+    DATA_LEARN_SESSION,
     DOMAIN,
     EVENT_CHIME_RECEIVED,
     EVENT_ESPHOME_RAW_RECEIVED,
@@ -62,6 +64,8 @@ def async_setup_receiver(hass: HomeAssistant) -> Callable[[], None]:
         if should_ignore_self_send(hass, event_data):
             return
 
+        _capture_learn_result(hass, event_data)
+
         hass.bus.async_fire(EVENT_CHIME_RECEIVED, event_data)
 
         _LOGGER.debug(
@@ -75,6 +79,38 @@ def async_setup_receiver(hass: HomeAssistant) -> Callable[[], None]:
     _LOGGER.info("JP Wireless Chime receiver event bridge initialized")
 
     return unsub
+
+
+def _capture_learn_result(
+    hass: HomeAssistant,
+    event_data: dict[str, Any],
+) -> None:
+    """Capture the next normalized chime event for learn mode."""
+    domain_data = hass.data.setdefault(DOMAIN, {})
+    session = domain_data.get(DATA_LEARN_SESSION)
+
+    if not session:
+        return
+
+    if session.get("result") is not None:
+        return
+
+    expires_at = float(session.get("expires_at", 0))
+    if expires_at <= monotonic():
+        domain_data.pop(DATA_LEARN_SESSION, None)
+        return
+
+    session["result"] = {
+        "protocol": event_data.get("protocol"),
+        "channel": event_data.get("channel"),
+        "melody": event_data.get("melody"),
+        "receiver": event_data.get("receiver"),
+    }
+
+    _LOGGER.info(
+        "JP Wireless Chime learn mode captured event: %s",
+        session["result"],
+    )
 
 
 def _trigger_matching_event_entities(
