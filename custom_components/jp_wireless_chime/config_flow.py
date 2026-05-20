@@ -29,6 +29,7 @@ from .const import (
     CONF_RECEIVER,
     CONF_REMOTE_ENTITY_ID,
     CONF_SEND_BUTTONS,
+    CONF_USE_LEARNED_RECEIVER,
     DATA_LEARN_SESSION,
     DEFAULT_COOLDOWN_SECONDS,
     DEVICE_KIND_RECEIVE,
@@ -41,13 +42,6 @@ from .const import (
 from .protocol import generate_base64
 
 _LOGGER = logging.getLogger(__name__)
-
-LEARN_ACTION = "learn_action"
-
-LEARN_ACTION_CHECK = "check_result"
-LEARN_ACTION_CANCEL = "cancel"
-LEARN_ACTION_REGISTER_ANY = "register_any_receiver"
-LEARN_ACTION_REGISTER_LEARNED = "register_learned_receiver"
 
 
 class JPWirelessChimeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -274,44 +268,31 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
         if session is None:
             return self.async_show_form(
                 step_id="learn_receive_wait",
-                data_schema=_learn_wait_schema(),
+                data_schema=vol.Schema({}),
                 errors={"base": "learn_session_expired"},
             )
 
-        result = session.get("result")
-        if result is not None:
+        if session.get("result") is not None:
             return await self.async_step_learn_receive_confirm()
 
-        errors: dict[str, str] = {}
-
         if user_input is not None:
-            action = str(user_input.get(LEARN_ACTION))
-
-            if action == LEARN_ACTION_CANCEL:
+            if monotonic() > float(session.get("expires_at", 0)):
                 self._clear_learn_session()
-                return self._create_options_entry()
+                return self.async_show_form(
+                    step_id="learn_receive_wait",
+                    data_schema=vol.Schema({}),
+                    errors={"base": "learn_session_expired"},
+                )
 
-            if action == LEARN_ACTION_CHECK:
-                session = self._get_learn_session()
-                if session is None:
-                    return self.async_show_form(
-                        step_id="learn_receive_wait",
-                        data_schema=_learn_wait_schema(),
-                        errors={"base": "learn_session_expired"},
-                    )
-
-                if session.get("result") is not None:
-                    return await self.async_step_learn_receive_confirm()
-
-                errors["base"] = "learn_signal_not_received"
+            return self.async_show_form(
+                step_id="learn_receive_wait",
+                data_schema=vol.Schema({}),
+                errors={"base": "learn_signal_not_received"},
+            )
 
         return self.async_show_form(
             step_id="learn_receive_wait",
-            data_schema=_learn_wait_schema(),
-            errors=errors,
-            description_placeholders={
-                "timeout": str(LEARN_TIMEOUT_SECONDS),
-            },
+            data_schema=vol.Schema({}),
         )
 
     async def async_step_learn_receive_confirm(
@@ -327,65 +308,44 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
         result = session["result"]
 
         if user_input is not None:
-            action = str(user_input.get(LEARN_ACTION))
+            use_learned_receiver = bool(
+                user_input.get(CONF_USE_LEARNED_RECEIVER, False)
+            )
 
-            if action == LEARN_ACTION_CANCEL:
-                self._clear_learn_session()
-                return self._create_options_entry()
+            name = str(session[CONF_NAME])
+            cooldown = _normalize_cooldown(session.get(CONF_COOLDOWN))
+            button_id = self._make_button_id(name, self._receive_buttons)
 
-            if action in {LEARN_ACTION_REGISTER_ANY, LEARN_ACTION_REGISTER_LEARNED}:
-                name = str(session[CONF_NAME])
-                cooldown = _normalize_cooldown(session.get(CONF_COOLDOWN))
-                button_id = self._make_button_id(name, self._receive_buttons)
+            receiver = (
+                str(result.get("receiver"))
+                if use_learned_receiver and result.get("receiver") is not None
+                else MATCH_ANY
+            )
 
-                if action == LEARN_ACTION_REGISTER_LEARNED:
-                    receiver = (
-                        str(result.get("receiver"))
-                        if result.get("receiver") is not None
-                        else MATCH_ANY
-                    )
-                else:
-                    receiver = MATCH_ANY
+            self._receive_buttons.append(
+                {
+                    CONF_BUTTON_ID: button_id,
+                    CONF_NAME: name,
+                    CONF_PROTOCOL: str(result["protocol"]),
+                    CONF_CHANNEL: str(result["channel"]),
+                    CONF_MELODY: str(result["melody"]),
+                    CONF_RECEIVER: receiver,
+                    CONF_COOLDOWN: cooldown,
+                }
+            )
 
-                self._receive_buttons.append(
-                    {
-                        CONF_BUTTON_ID: button_id,
-                        CONF_NAME: name,
-                        CONF_PROTOCOL: str(result["protocol"]),
-                        CONF_CHANNEL: str(result["channel"]),
-                        CONF_MELODY: str(result["melody"]),
-                        CONF_RECEIVER: receiver,
-                        CONF_COOLDOWN: cooldown,
-                    }
-                )
+            self._clear_learn_session()
 
-                self._clear_learn_session()
-
-                return self._create_options_entry()
+            return self._create_options_entry()
 
         schema = vol.Schema(
             {
-                vol.Required(
-                    LEARN_ACTION,
-                    default=LEARN_ACTION_REGISTER_ANY,
+                vol.Optional(
+                    CONF_USE_LEARNED_RECEIVER,
+                    default=False,
                 ): selector(
                     {
-                        "select": {
-                            "options": [
-                                {
-                                    "value": LEARN_ACTION_REGISTER_ANY,
-                                    "label": "Register with any receiver",
-                                },
-                                {
-                                    "value": LEARN_ACTION_REGISTER_LEARNED,
-                                    "label": "Register with learned receiver only",
-                                },
-                                {
-                                    "value": LEARN_ACTION_CANCEL,
-                                    "label": "Cancel",
-                                },
-                            ]
-                        }
+                        "boolean": {}
                     }
                 )
             }
@@ -643,33 +603,6 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
             device_id=device.id,
             remove_config_entry_id=self.config_entry.entry_id,
         )
-
-
-def _learn_wait_schema() -> vol.Schema:
-    """Return learn wait schema."""
-    return vol.Schema(
-        {
-            vol.Required(
-                LEARN_ACTION,
-                default=LEARN_ACTION_CHECK,
-            ): selector(
-                {
-                    "select": {
-                        "options": [
-                            {
-                                "value": LEARN_ACTION_CHECK,
-                                "label": "Check received result",
-                            },
-                            {
-                                "value": LEARN_ACTION_CANCEL,
-                                "label": "Cancel",
-                            },
-                        ]
-                    }
-                }
-            )
-        }
-    )
 
 
 def _protocol_selector() -> Any:
