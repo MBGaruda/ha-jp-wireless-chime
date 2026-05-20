@@ -23,7 +23,7 @@
         }
       },
       "add_receive": {
-        "title": "受信ボタンを手動追加",
+        "title": "受信ボタンを追加",
         "description": "物理ワイヤレスチャイムボタンをイベントエンティティとして登録します。チャンネル、音色、受信機は * または空欄でワイルドカードになります。",
         "data": {
           "name": "名前",
@@ -32,25 +32,6 @@
           "melody": "音色",
           "receiver": "受信機",
           "cooldown": "クールタイム"
-        }
-      },
-      "learn_receive_setup": {
-        "title": "受信ボタンを学習で追加",
-        "description": "名前を入力してから、60秒以内に物理チャイムボタンを押してください。",
-        "data": {
-          "name": "名前",
-          "cooldown": "クールタイム"
-        }
-      },
-      "learn_receive_wait": {
-        "title": "チャイム信号を待機中",
-        "description": "物理ワイヤレスチャイムボタンを押してください。既に信号を受信している場合は、このフォームを送信して次へ進んでください。"
-      },
-      "learn_receive_confirm": {
-        "title": "学習した受信ボタンを確認",
-        "description": "学習した信号:\n\nプロトコル: {protocol}\nチャンネル: {channel}\n音色: {melody}\n受信機: {receiver}\n\n既定では、どの受信機で受信しても一致します。学習時の受信機だけに限定する場合は、以下を有効にしてください。",
-        "data": {
-          "use_learned_receiver": "学習時の受信機だけに限定する"
         }
       },
       "remove_receive": {
@@ -83,9 +64,7 @@
       "invalid_chime_button": "プロトコル、チャンネル、音色の組み合わせが不正です。",
       "invalid_remote_entity": "リモートエンティティが不正です。",
       "no_receive_buttons": "登録済み受信ボタンがありません。",
-      "no_send_buttons": "登録済み送信ボタンがありません。",
-      "learn_session_expired": "学習セッションが期限切れです。もう一度学習を開始してください。",
-      "learn_signal_not_received": "まだチャイム信号を受信していません。物理チャイムボタンを押してから、もう一度送信してください。"
+      "no_send_buttons": "登録済み送信ボタンがありません。"
     }
   }
 }

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from copy import deepcopy
 import logging
-from time import monotonic
 from typing import Any
 from uuid import uuid4
 
@@ -19,7 +18,6 @@ from homeassistant.util import slugify
 
 from .const import (
     CONF_BUTTON_ID,
-    CONF_BUTTONS,
     CONF_CHANNEL,
     CONF_COOLDOWN,
     CONF_MELODY,
@@ -29,13 +27,10 @@ from .const import (
     CONF_RECEIVER,
     CONF_REMOTE_ENTITY_ID,
     CONF_SEND_BUTTONS,
-    CONF_USE_LEARNED_RECEIVER,
-    DATA_LEARN_SESSION,
     DEFAULT_COOLDOWN_SECONDS,
     DEVICE_KIND_RECEIVE,
     DEVICE_KIND_SEND,
     DOMAIN,
-    LEARN_TIMEOUT_SECONDS,
     MATCH_ANY,
     SUPPORTED_PROTOCOLS,
 )
@@ -111,9 +106,6 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
             if action == "add_receive":
                 return await self.async_step_add_receive()
 
-            if action == "learn_receive":
-                return await self.async_step_learn_receive_setup()
-
             if action == "remove_receive":
                 return await self.async_step_remove_receive()
 
@@ -131,11 +123,7 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
                             "options": [
                                 {
                                     "value": "add_receive",
-                                    "label": "Add receive button manually",
-                                },
-                                {
-                                    "value": "learn_receive",
-                                    "label": "Add receive button by learning",
+                                    "label": "Add receive button",
                                 },
                                 {
                                     "value": "remove_receive",
@@ -165,7 +153,7 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
         self,
         user_input: dict[str, Any] | None = None,
     ) -> config_entries.ConfigFlowResult:
-        """Add a receive chime button manually."""
+        """Add a receive chime button."""
         errors: dict[str, str] = {}
 
         if user_input is not None:
@@ -222,144 +210,6 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
             step_id="add_receive",
             data_schema=schema,
             errors=errors,
-        )
-
-    async def async_step_learn_receive_setup(
-        self,
-        user_input: dict[str, Any] | None = None,
-    ) -> config_entries.ConfigFlowResult:
-        """Prepare learn mode for a receive button."""
-        if user_input is not None:
-            name = str(user_input[CONF_NAME])
-            cooldown = _normalize_cooldown(user_input.get(CONF_COOLDOWN))
-
-            self.hass.data.setdefault(DOMAIN, {})[DATA_LEARN_SESSION] = {
-                "entry_id": self.config_entry.entry_id,
-                "name": name,
-                "cooldown": cooldown,
-                "expires_at": monotonic() + LEARN_TIMEOUT_SECONDS,
-                "result": None,
-            }
-
-            return await self.async_step_learn_receive_wait()
-
-        schema = vol.Schema(
-            {
-                vol.Required(CONF_NAME): str,
-                vol.Optional(
-                    CONF_COOLDOWN,
-                    default=DEFAULT_COOLDOWN_SECONDS,
-                ): _cooldown_selector(),
-            }
-        )
-
-        return self.async_show_form(
-            step_id="learn_receive_setup",
-            data_schema=schema,
-        )
-
-    async def async_step_learn_receive_wait(
-        self,
-        user_input: dict[str, Any] | None = None,
-    ) -> config_entries.ConfigFlowResult:
-        """Wait for the next received chime signal."""
-        session = self._get_learn_session()
-
-        if session is None:
-            return self.async_show_form(
-                step_id="learn_receive_wait",
-                data_schema=vol.Schema({}),
-                errors={"base": "learn_session_expired"},
-            )
-
-        if session.get("result") is not None:
-            return await self.async_step_learn_receive_confirm()
-
-        if user_input is not None:
-            if monotonic() > float(session.get("expires_at", 0)):
-                self._clear_learn_session()
-                return self.async_show_form(
-                    step_id="learn_receive_wait",
-                    data_schema=vol.Schema({}),
-                    errors={"base": "learn_session_expired"},
-                )
-
-            return self.async_show_form(
-                step_id="learn_receive_wait",
-                data_schema=vol.Schema({}),
-                errors={"base": "learn_signal_not_received"},
-            )
-
-        return self.async_show_form(
-            step_id="learn_receive_wait",
-            data_schema=vol.Schema({}),
-        )
-
-    async def async_step_learn_receive_confirm(
-        self,
-        user_input: dict[str, Any] | None = None,
-    ) -> config_entries.ConfigFlowResult:
-        """Confirm learned receive button."""
-        session = self._get_learn_session()
-
-        if session is None or session.get("result") is None:
-            return await self.async_step_learn_receive_wait()
-
-        result = session["result"]
-
-        if user_input is not None:
-            use_learned_receiver = bool(
-                user_input.get(CONF_USE_LEARNED_RECEIVER, False)
-            )
-
-            name = str(session[CONF_NAME])
-            cooldown = _normalize_cooldown(session.get(CONF_COOLDOWN))
-            button_id = self._make_button_id(name, self._receive_buttons)
-
-            receiver = (
-                str(result.get("receiver"))
-                if use_learned_receiver and result.get("receiver") is not None
-                else MATCH_ANY
-            )
-
-            self._receive_buttons.append(
-                {
-                    CONF_BUTTON_ID: button_id,
-                    CONF_NAME: name,
-                    CONF_PROTOCOL: str(result["protocol"]),
-                    CONF_CHANNEL: str(result["channel"]),
-                    CONF_MELODY: str(result["melody"]),
-                    CONF_RECEIVER: receiver,
-                    CONF_COOLDOWN: cooldown,
-                }
-            )
-
-            self._clear_learn_session()
-
-            return self._create_options_entry()
-
-        schema = vol.Schema(
-            {
-                vol.Optional(
-                    CONF_USE_LEARNED_RECEIVER,
-                    default=False,
-                ): selector(
-                    {
-                        "boolean": {}
-                    }
-                )
-            }
-        )
-
-        return self.async_show_form(
-            step_id="learn_receive_confirm",
-            data_schema=schema,
-            description_placeholders={
-                "protocol": str(result.get("protocol")),
-                "channel": str(result.get("channel")),
-                "melody": str(result.get("melody")),
-                "receiver": str(result.get("receiver")),
-            },
         )
 
     async def async_step_remove_receive(
@@ -510,7 +360,7 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
 
         Legacy buttons are treated as receive buttons.
         """
-        legacy_buttons = deepcopy(self.config_entry.options.get(CONF_BUTTONS, []))
+        legacy_buttons = deepcopy(self.config_entry.options.get("buttons", []))
         receive_buttons = deepcopy(
             self.config_entry.options.get(CONF_RECEIVE_BUTTONS, [])
         )
@@ -532,26 +382,6 @@ class JPWirelessChimeOptionsFlow(config_entries.OptionsFlow):
                 CONF_SEND_BUTTONS: self._send_buttons,
             },
         )
-
-    def _get_learn_session(self) -> dict[str, Any] | None:
-        """Return active learn session."""
-        session = self.hass.data.get(DOMAIN, {}).get(DATA_LEARN_SESSION)
-
-        if not session:
-            return None
-
-        if session.get("entry_id") != self.config_entry.entry_id:
-            return None
-
-        if monotonic() > float(session.get("expires_at", 0)):
-            self._clear_learn_session()
-            return None
-
-        return session
-
-    def _clear_learn_session(self) -> None:
-        """Clear learn session."""
-        self.hass.data.setdefault(DOMAIN, {}).pop(DATA_LEARN_SESSION, None)
 
     def _make_button_id(
         self,
