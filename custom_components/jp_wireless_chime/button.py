@@ -7,6 +7,7 @@ from typing import Any
 from homeassistant.components.button import ButtonEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import (
@@ -32,12 +33,37 @@ async def async_setup_entry(
     """Set up JP Wireless Chime send button entities."""
     buttons = entry.options.get(CONF_SEND_BUTTONS, [])
 
+    _ensure_send_devices(hass, entry, buttons)
+
     entities = [
         JPWirelessChimeSendButtonEntity(entry, button)
         for button in buttons
     ]
 
     async_add_entities(entities)
+
+
+def _ensure_send_devices(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    buttons: list[dict[str, Any]],
+) -> None:
+    """Ensure send button devices exist in the device registry."""
+    device_registry = dr.async_get(hass)
+
+    for button in buttons:
+        button_id = str(button[CONF_BUTTON_ID])
+        name = str(button[CONF_NAME])
+
+        device_registry.async_get_or_create(
+            config_entry_id=entry.entry_id,
+            identifiers={
+                (DOMAIN, f"{entry.entry_id}_{DEVICE_KIND_SEND}_{button_id}")
+            },
+            manufacturer="JP Wireless Chime",
+            name=name,
+            model="Wireless Chime Send Button",
+        )
 
 
 class JPWirelessChimeSendButtonEntity(ButtonEntity):
